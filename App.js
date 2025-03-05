@@ -1,10 +1,28 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useFonts } from 'expo-font';
+import Recipe from './src/screens/Recipe';
 
 export default function App() {
+  // Load the custom fonts
+  const [fontsLoaded] = useFonts({
+    'Primary-Regular': require('./assets/fonts/Zain/Zain-Regular.ttf'),
+    'Primary-Bold': require('./assets/fonts/Zain/Zain-Bold.ttf'),
+    'Primary-ExtraBold': require('./assets/fonts/Zain/Zain-ExtraBold.ttf'),
+  });
+
+  // If fonts are not loaded, show a loading spinner
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Recipe/>
       <StatusBar style="auto" />
     </View>
   );
@@ -12,9 +30,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding:5,
+    backgroundColor:'white',  
   },
 });
