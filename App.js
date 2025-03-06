@@ -1,17 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useFonts } from 'expo-font';
-import Recipe from './src/screens/Recipe';
+import AppNavigator from './src/navigation/AppNavigator';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
-  // Load the custom fonts
   const [fontsLoaded] = useFonts({
     'Primary-Regular': require('./assets/fonts/Zain/Zain-Regular.ttf'),
     'Primary-Bold': require('./assets/fonts/Zain/Zain-Bold.ttf'),
     'Primary-ExtraBold': require('./assets/fonts/Zain/Zain-ExtraBold.ttf'),
   });
 
-  // If fonts are not loaded, show a loading spinner
   if (!fontsLoaded) {
     return (
       <View style={styles.centered}>
@@ -21,16 +21,16 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
-      <Recipe/>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppNavigator />
       <StatusBar style="auto" />
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding:5,
-    backgroundColor:'white',  
+    flex: 1,
+    backgroundColor: 'white',
   },
 });

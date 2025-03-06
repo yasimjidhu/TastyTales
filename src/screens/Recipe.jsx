@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Recipe() {
     return (
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
             {/* Image Section */}
-            <View style={styles.container}>
+            <View style={styles.imgContainer}>
                 <Image source={require('../../assets/images/pizza.jpg')} style={styles.recipeImg} />
             </View>
 
@@ -48,9 +48,42 @@ export default function Recipe() {
                 </View>
 
                 {/* Ingredients section */}
-                <View>
+                <View style={styles.ingredientsDiv}>
                     <Text style={styles.descriptionTitle}>Ingredients</Text>
+                    <View style={styles.ingredientsContainer}>
+                        <View style={styles.ingredientItem}>
+                            <View style={styles.ingredientContent}>
+                                <Image source={require('../../assets/images/breakFast.png')} style={styles.ingredientImage} />
+                                <Text style={styles.ingredientName}>Granulated Sugar</Text>
+                            </View>
+                            <View style={styles.ingredientAmountContainer}>
+                                <Text style={styles.ingredientAmount}>160g</Text>
+                            </View>
+                        </View>
+                        <View style={styles.ingredientItem}>
+                            <View style={styles.ingredientContent}>
+                                <Image source={require('../../assets/images/lunch.png')} style={styles.ingredientImage} />
+                                <Text style={styles.ingredientName}>Granulated Sugar</Text>
+                            </View>
+                            <View style={styles.ingredientAmountContainer}>
+                                <Text style={styles.ingredientAmount}>140g</Text>
+                            </View>
+                        </View>
+                        {/* <View style={styles.ingredientItem}>
+                            <View style={styles.ingredientContent}>
+                                <Image source={require('../../assets/images/dinner.png')} style={styles.ingredientImage} />
+                                <Text style={styles.ingredientName}>Granulated Sugar</Text>
+                            </View>
+                            <View style={styles.ingredientAmountContainer}>
+                                <Text style={styles.ingredientAmount}>140g</Text>
+                            </View>
+                        </View> */}
+                    </View>
                 </View>
+                <TouchableOpacity style={styles.button}>
+                    <Ionicons name="play-circle-outline" size={30} color="white" style={styles.playIcon}/>
+                    <Text style={styles.buttonText}>Watch Videos</Text>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );
@@ -59,12 +92,14 @@ export default function Recipe() {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '',
-        marginTop: 40,
-        padding: 10,
+    },
+    imgContainer: {
+        height: 300,
+        width: '100%',
     },
     recipeImg: {
         width: '100%',
-        height: 300,
+        height: '100%',
         resizeMode: 'cover',
         borderRadius: 15,
     },
@@ -81,7 +116,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 15,
+        marginBottom: 4,
     },
     recipeTitle: {
         fontFamily: 'Primary-Bold',
@@ -99,14 +134,14 @@ const styles = StyleSheet.create({
     },
     recipeIcons: {
         marginTop: 10,
-        flexDirection:'row',
-        justifyContent:'space-between',
-        alignItems:'center'
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
     },
     iconItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 1,
     },
     iconText: {
         marginLeft: 5,
@@ -120,7 +155,7 @@ const styles = StyleSheet.create({
     descriptionTitle: {
         fontFamily: 'Primary-Bold',
         fontSize: 26,
-        marginBottom: 10,
+        marginBottom: 4,
     },
     descriptionText: {
         fontFamily: 'Primary-Regular',
@@ -128,4 +163,63 @@ const styles = StyleSheet.create({
         color: 'black',
         lineHeight: 24,
     },
+    ingredientsDiv: {
+        marginTop: 10,
+    },
+    descriptionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    ingredientItem: {
+        backgroundColor: '#ebf0ec',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginVertical: 5,
+        padding: 10,
+        borderRadius: 15,
+    },
+    ingredientContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    ingredientImage: {
+        width: 40,
+        height: 40,
+        marginRight: 10,
+        borderRadius: 5,
+        objectFit: 'cover',
+    },
+    ingredientName: {
+        fontSize: 18,
+        color: 'black',
+        fontFamily: 'Primary-Bold'
+    },
+    ingredientAmountContainer: {
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+    },
+    ingredientAmount: {
+        fontSize: 18,
+        color: 'black',
+        fontFamily: 'Primary-Bold'
+    },
+    button:{
+        width:'50%',
+        flexDirection:'row',
+        justifyContent:'center',
+        alignItems:'center',
+        padding:10,
+        backgroundColor:'teal',
+        borderRadius:15,
+        marginTop:10,
+        margin:'auto'
+    },
+    buttonText:{
+        fontFamily:'Primary-Bold',
+        fontSize:20,
+        color:'white',
+        marginLeft:5
+    }
 });

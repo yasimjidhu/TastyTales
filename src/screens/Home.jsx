@@ -1,20 +1,12 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TextInput, View, ScrollView, Image, TouchableOpacity } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import SearchBar from '../components/SearchBar';
 
 export const Home = () => {
-    const [searchText, setSearchText] = React.useState('');
-
-    const handleSearchChange = (text) => {
-        setSearchText(text);
-    };
+    
     const handleCategoryPress = () => {
         console.log('cateogory pressed')
     }
-
-    useEffect(() => {
-
-    }, [searchText])
 
     return (
         <ScrollView
@@ -34,17 +26,7 @@ export const Home = () => {
             </View>
 
             {/* Search Bar Section */}
-            <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search for recipes"
-                    value={searchText}
-                    onChangeText={handleSearchChange}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                />
-            </View>
+            <SearchBar/>
 
             {/* Categories Section with Horizontal Scrolling */}
             <View style={styles.categoriesContainer}>
@@ -143,12 +125,13 @@ export const Home = () => {
                         </View>
                     </View>
                     <View style={styles.recipeWeekImgContainer}>
-                        <Image source='' />
+                        <Image source={require('../../assets/images/juice.jpg')} style={styles.recipeWeekImg} />
+                        <View style={styles.textOverlay}>
+                            <Text style={styles.weekRecipeText}>Creamy Pasta</Text>
+                            <Text style={styles.ownerText}>By Charles peter</Text>
+                        </View>
                     </View>
                 </ScrollView>
-            </View>
-            <View style={{ marginTop: 50 }}>
-                <Text>faa</Text>
             </View>
         </ScrollView>
     );
@@ -156,11 +139,7 @@ export const Home = () => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '',
-        marginTop: 40,
-        padding: 20,
-        display: 'flex',
-        justifyContent: 'space-around',
+        padding:20
     },
     flexRow: {
         flexDirection: 'row',
@@ -173,25 +152,7 @@ const styles = StyleSheet.create({
         width: 50,
         borderRadius: 25,
     },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 10,
-        width: '100%',
-        backgroundColor: '#f2f2f2',
-        padding: 10,
-        borderRadius: 30,
-        borderWidth: 1,
-        borderColor: '#f2f2f2',
-    },
-    searchIcon: {
-        padding: 5,
-    },
-    searchInput: {
-        width: '90%',
-        height: 40,
-        marginLeft: 10,
-    },
+
     categoriesContainer: {
         marginTop: 25,
     },
@@ -262,7 +223,8 @@ const styles = StyleSheet.create({
     },
     ownerText: {
         fontFamily: 'Primary-Regular',
-        fontSize: 12
+        color:'black',
+        fontSize:12
     },
     recipeWeekContainer: {
         marginTop: 1,
