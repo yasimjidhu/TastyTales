@@ -73,10 +73,10 @@ export const addReview = createAsyncThunk(
 
 export const fetchCategoryWiseRecipes = createAsyncThunk(
   'recipes/getCategoryWiseRecipes',
-  async (category, { rejectWithValue }) => {
-    
+  async ({ category, page = 1 }, { rejectWithValue }) => {
+
     try {
-      const response = await fetch(`${API_URL}/api/category/${category}`, {
+      const response = await fetch(`${API_URL}/api/category/${category}?page=${page}&limit=${10}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -98,6 +98,8 @@ const initialState = {
   recipes: [],
   loading: false,
   error: null,
+  totalPages: 0,
+  currentPage: 1,
 };
 
 const recipeSlice = createSlice({
@@ -172,8 +174,15 @@ const recipeSlice = createSlice({
       }
       )
       .addCase(fetchCategoryWiseRecipes.fulfilled, (state, action) => {
+        const { recipes, totalPages, currentPage } = action.payload;
+        if (currentPage === 1) {
+          state.recipes = recipes;
+        } else {
+          state.recipes = [...state.recipes, ...recipes];
+        }
         state.loading = false
-        state.recipes = action.payload;
+        state.totalPages = totalPages;
+        state.currentPage = currentPage;
 
       })
       .addCase(fetchCategoryWiseRecipes.rejected, (state, action) => {
