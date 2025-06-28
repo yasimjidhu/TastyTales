@@ -12,8 +12,8 @@ export const Home = ({ navigation }) => {
 
     const { user, loading, error } = useSelector((state) => state.user)
 
-    const handleCategoryPress = () => {
-        navigation.navigate()
+    const handleCategoryPress = (category) => {
+        navigation.navigate('Category',{category})
     }
 
     const handleDishClick = (recipeId) => {
@@ -81,19 +81,19 @@ export const Home = ({ navigation }) => {
                     showsHorizontalScrollIndicator={false}
                     style={styles.categoryBoxContainer}
                 >
-                    <TouchableOpacity style={styles.categoryBox} onPress={handleCategoryPress}>
+                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('breakfast')}>
                         <Image source={require('../../assets/images/breakFast.png')} style={styles.categoryImage} />
                         <Text style={styles.categoryText}>BreakFast</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={handleCategoryPress}>
+                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('lunch')}>
                         <Image source={require('../../assets/images/lunch.png')} style={styles.categoryImage} />
                         <Text style={styles.categoryText}>Lunch</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={handleCategoryPress}>
+                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('dinner')}>
                         <Image source={require('../../assets/images/dinner.png')} style={styles.categoryImage} />
                         <Text style={styles.categoryText}>Dinner</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={handleCategoryPress}>
+                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('dessert')}>
                         <Image source={require('../../assets/images/dessert.png')} style={styles.categoryImage} />
                         <Text style={styles.categoryText}>Dessert</Text>
                     </TouchableOpacity>
@@ -132,7 +132,6 @@ export const Home = ({ navigation }) => {
                     ))}
                 </ScrollView>
             </View>
-
 
             {/* Recipes of the week section */}
             <View style={styles.recipeWeekContainer}>

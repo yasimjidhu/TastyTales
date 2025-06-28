@@ -15,6 +15,7 @@ import Account from "../screens/Account";
 import AddRecipe from "../screens/AddRecipe";
 import { useSelector } from "react-redux";
 import CookingStepsScreen from "../screens/CookingStepScreen";
+import Category from "../screens/Category";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -73,6 +74,7 @@ function MainStack(){
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="Recipe" component={Recipe} options={{title:'Recipe Details',headerBackTitle:'Back'}} />
       <Stack.Screen name="CookingSteps" component={CookingStepsScreen} />
+      <Stack.Screen name="Category" component={Category}/>
     </Stack.Navigator>
 
   )
