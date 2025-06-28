@@ -48,7 +48,7 @@ export const fetchRecipe = createAsyncThunk(
 
 export const addReview = createAsyncThunk(
   'recipes/addReview',
-  async ({ recipeId, rating, comment,userName,userImage }, { rejectWithValue }) => {
+  async ({ recipeId, rating, comment, userName, userImage }, { rejectWithValue }) => {
     try {
       const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/review`, {
@@ -57,7 +57,7 @@ export const addReview = createAsyncThunk(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rating, comment,userName,userImage }),
+        body: JSON.stringify({ rating, comment, userName, userImage }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -70,6 +70,29 @@ export const addReview = createAsyncThunk(
     }
   }
 );
+
+export const fetchCategoryWiseRecipes = createAsyncThunk(
+  'recipes/getCategoryWiseRecipes',
+  async (category, { rejectWithValue }) => {
+    
+    try {
+      const response = await fetch(`${API_URL}/api/category/${category}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to retrieve category-wise recipes');
+      }
+      const data = await response.json()
+      return data
+    } catch (error) {
+      return rejectWithValue(error.message || 'Something went wrong while fetching category-wise recipes');
+    }
+  }
+)
 
 const initialState = {
   recipes: [],
@@ -125,7 +148,7 @@ const recipeSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Something went wrong';
       })
-      .addCase(addReview.pending, (state) => {  
+      .addCase(addReview.pending, (state) => {
         state.loading = true;
         state.error = null;
       }
@@ -138,8 +161,22 @@ const recipeSlice = createSlice({
           state.recipes[recipeIndex] = recipe;
         }
         state.loading = false;
-      })      
+      })
       .addCase(addReview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to add review';
+      })
+      .addCase(fetchCategoryWiseRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      }
+      )
+      .addCase(fetchCategoryWiseRecipes.fulfilled, (state, action) => {
+        state.loading = false
+        state.recipes = action.payload;
+
+      })
+      .addCase(fetchCategoryWiseRecipes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to add review';
       });
