@@ -56,7 +56,7 @@ const deleteOne = async (req, res) => {
 const likeOrUnlike = async (req,res)=>{
     const userId = req.user._id
     const { recipeId } = req.params;
-  
+
     try {
         const user = await User.findById(userId);
         if(user.likedRecipes.includes(recipeId)){
@@ -119,6 +119,26 @@ const addReview = async (req, res) => {
     }
 }
 
+const searchRecipes = async (req, res) => {
+    const { q = '', category = '', page = 1, limit = 10 } = req.query;
+    const query = {}
+    if (q) query.title = { $regex: q, $options: 'i' }; // Case-insensitive search
+    if (category) query.category = category.toLowerCase();
+
+    const recipes = await Recipe.find(query)
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+
+    const total = await Recipe.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+    res.json({
+        recipes,
+        total,
+        currentPage: parseInt(page),
+        totalPages
+    });
+}
+
 module.exports = {
     addRecipe,
     getAll,
@@ -127,5 +147,6 @@ module.exports = {
     deleteOne,
     likeOrUnlike,
     saveOrUnsave,
-    addReview
+    addReview,
+    searchRecipes
 }

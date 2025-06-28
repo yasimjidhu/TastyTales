@@ -73,10 +73,10 @@ export const addReview = createAsyncThunk(
 
 export const fetchCategoryWiseRecipes = createAsyncThunk(
   'recipes/getCategoryWiseRecipes',
-  async (category, { rejectWithValue }) => {
-    
+  async ({ category, page = 1 }, { rejectWithValue }) => {
+
     try {
-      const response = await fetch(`${API_URL}/api/category/${category}`, {
+      const response = await fetch(`${API_URL}/api/category/${category}?page=${page}&limit=${10}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -94,10 +94,32 @@ export const fetchCategoryWiseRecipes = createAsyncThunk(
   }
 )
 
+export const searchRecipes = createAsyncThunk(
+  'recipes/searchRecipes',
+  async ({ query, category = '', page = 1 }, { rejectWithValue }) => {
+    try {
+      console.log('Searching for recipes:', query, 'Category:', category, 'Page:', page);
+      const response = await fetch(`${API_URL}/api/recipes/search?q=${query}&category=${category}&page=${page}&limit=10`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Search failed');
+      }
+      const data = await response.json();
+      return data;  // { recipes, total }
+    } catch (error) {
+      return rejectWithValue(error.message || 'Something went wrong during search');
+    }
+  }
+);
+
+
 const initialState = {
   recipes: [],
   loading: false,
   error: null,
+  searchResults: [],
+  totalPages: 0,
+  currentPage: 1,
 };
 
 const recipeSlice = createSlice({
@@ -172,13 +194,40 @@ const recipeSlice = createSlice({
       }
       )
       .addCase(fetchCategoryWiseRecipes.fulfilled, (state, action) => {
+        const { recipes, totalPages, currentPage } = action.payload;
+        if (currentPage === 1) {
+          state.recipes = recipes;
+        } else {
+          state.recipes = [...state.recipes, ...recipes];
+        }
         state.loading = false
-        state.recipes = action.payload;
+        state.totalPages = totalPages;
+        state.currentPage = currentPage;
 
       })
       .addCase(fetchCategoryWiseRecipes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to add review';
+      }).addCase(searchRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(searchRecipes.fulfilled, (state, action) => {
+        const { recipes, totalPages, currentPage } = action.payload;
+
+        if (currentPage === 1) {
+          state.searchResults = recipes;
+        } else {
+          state.searchResults = [...state.searchResults, ...recipes];
+        }
+
+        state.loading = false;
+        state.totalPages = totalPages;
+        state.currentPage = currentPage;
+      })
+      .addCase(searchRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Search failed';
       });
   },
 });

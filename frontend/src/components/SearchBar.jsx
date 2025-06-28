@@ -1,14 +1,34 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, TextInput } from 'react-native'
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { searchRecipes } from '../store/slices/recipe';
+import { useDispatch } from 'react-redux';
 
 
 export default function SearchBar({ text }) {
-    const [searchText, setSearchText] = React.useState('');
+    const [searchText, setSearchText] = useState('');
+
+    const dispatch = useDispatch();
+
+    useEffect(()=>{
+        const delayDebounce = setTimeout(() => {
+            if(searchText.trim().length >= 0 ){
+                dispatch(searchRecipes({ query:searchText }));
+                console.log('Searching for recipes:', searchText);
+            }
+        }, 500);
+
+        return () => clearTimeout(delayDebounce);
+    },[searchText, dispatch]);
 
     const handleSearchChange = (text) => {
         setSearchText(text);
     };
+
+    const handleSearchRecipes = () => {
+        dispatch(searchRecipes({ searchText }));
+        console.log('Searching for recipes:', searchText);
+    }
 
     useEffect(() => {
 
