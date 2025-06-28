@@ -6,7 +6,8 @@ const router = express.Router();
 
 router.post("/",recipeController.addRecipe)
 
-// get single recipe by id 
+router.get('/search', recipeController.searchRecipes);
+
 router.get("/:id",recipeController.getOne);
 
 router.get("/",recipeController.getAll)
