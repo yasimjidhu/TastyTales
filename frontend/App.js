@@ -2,11 +2,12 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import AppNavigator from './src/navigation/AppNavigator';
-import {AuthProvider} from './src/context/authContext';
+import { AuthProvider } from './src/context/authContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
-import store from './src/store/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import store, { persistor } from './src/store/store';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -26,10 +27,12 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
         <AuthProvider>
-        <AppNavigator />
-        <StatusBar style="auto" />
+          <AppNavigator />
+          <StatusBar style="auto" />
         </AuthProvider>
+        </PersistGate>
       </Provider>
     </GestureHandlerRootView>
   );

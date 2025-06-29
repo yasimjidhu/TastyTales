@@ -3,6 +3,8 @@ import { View, Text, Button, StyleSheet, SafeAreaView, Image, ScrollView, Toucha
 import { ProgressBar } from 'react-native-paper';
 import TimerComponent from '../components/Timer';
 import QuickActionsComponent from '../components/QuickActions';
+import { useDispatch } from 'react-redux';
+import { addMadeItRecipe } from '../store/slices/recipe';
 
 const CookingStepsScreen = ({ route, navigation }) => {
     const { recipe } = route.params;
@@ -10,6 +12,8 @@ const CookingStepsScreen = ({ route, navigation }) => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [stepNotes, setStepNotes] = useState({});
     const [completedSteps, setCompletedSteps] = useState({});
+
+    const dispatch = useDispatch();
 
     const handleNext = () => {
         if (currentStepIndex < steps.length - 1) {
@@ -44,6 +48,11 @@ const CookingStepsScreen = ({ route, navigation }) => {
         console.log(`Step ${stepIndex} completion status: ${isCompleted}`);
     };
 
+    const handleFinishRecipe = () => {
+        console.log('Recipe finished:', recipe.title);
+        dispatch(addMadeItRecipe(recipe?._id));
+        navigation.goBack()
+    }
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -148,7 +157,7 @@ const CookingStepsScreen = ({ route, navigation }) => {
                 {currentStepIndex === steps.length - 1 ? (
                     <TouchableOpacity
                         style={[styles.navButton, styles.finishButton]}
-                        onPress={() => navigation.goBack()}
+                        onPress={handleFinishRecipe}
                     >
                         <Text style={styles.buttonText}>✓ Finish</Text>
                     </TouchableOpacity>

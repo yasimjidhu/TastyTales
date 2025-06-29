@@ -8,6 +8,8 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String, default: "" },
   likedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
   savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
+  madeItRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
+
 
 }, { timestamps: true });
 

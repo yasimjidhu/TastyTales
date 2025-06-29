@@ -149,6 +149,70 @@ const getRecipesOfTheWeek = async (req, res) => {
     }
 }
 
+const markAsMadeIt = async (req, res) => {
+    const { recipeId } = req.body
+    const userId = req.user;
+
+    try {
+        const recipe = await Recipe.findById(recipeId);
+        if (!recipe) return res.status(404).json({ error: "Recipe not found" });
+
+        const user = await User.findById(userId);
+        if (!user.madeItRecipes.includes(recipeId)) {
+            user.madeItRecipes.push(recipeId);
+            await user.save();
+        }
+        res.json(recipe);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+const getMadeItRecipes = async (req, res) => {
+    const userId = req.user._id;
+    try {
+        const user = await User.findById(userId).populate('madeItRecipes');
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const madeItRecipes = user.madeItRecipes;
+        if (!madeItRecipes || madeItRecipes.length === 0) {
+            return res.status(404).json({ error: "No recipes marked as made" });
+        }
+        res.json(madeItRecipes);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to retrieve made recipes" });
+    }
+}
+
+const getSavedRecipes = async (req, res) => {
+  const userId = req.user._id;
+
+  try {
+
+    const user = await User.findById(userId).populate({
+      path: "savedRecipes",
+      model: "recipes", 
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const savedRecipes = user.savedRecipes;
+
+    if (!savedRecipes || savedRecipes.length === 0) {
+      return res.json([]);
+    }
+
+    res.json(savedRecipes);
+  } catch (error) {
+    console.error("Error fetching saved recipes:", error);
+    res.status(500).json({ error: "Failed to retrieve saved recipes" });
+  }
+};
+
+
 module.exports = {
     addRecipe,
     getAll,
@@ -159,5 +223,8 @@ module.exports = {
     saveOrUnsave,
     addReview,
     searchRecipes,
-    getRecipesOfTheWeek
+    getRecipesOfTheWeek,
+    markAsMadeIt,
+    getMadeItRecipes,
+    getSavedRecipes
 }

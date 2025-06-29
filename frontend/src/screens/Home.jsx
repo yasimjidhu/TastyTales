@@ -1,31 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View, ScrollView, Image, TouchableOpacity } from 'react-native';
-import SearchBar from '../components/SearchBar';
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import SearchBar from "../components/SearchBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserProfile } from "../store/slices/user";
-import { fetchWeekRecipes } from "../store/slices/recipe";
+import {
+  addRecentlyViewed,
+  clearSearchResults,
+  fetchRecipes,
+  fetchWeekRecipes,
+} from "../store/slices/recipe";
 
 export const Home = ({ navigation }) => {
-
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
   const dispatch = useDispatch();
 
   const { user, loading, error } = useSelector((state) => state.user);
-  const { recipes,searchResults, weekRecipes } = useSelector((state) => state.recipes);
+  const { recipes, searchResults, weekRecipes } = useSelector(
+    (state) => state.recipes
+  );
 
   const handleCategoryPress = (category) => {
     navigation.navigate("Category", { category });
   };
 
-  const handleDishClick = (recipeId) => {
-    navigation.navigate("Recipe", { recipeId });
+  const handleDishClick = (recipeId,recipe) => {
+    if(recipeId && recipe){
+      dispatch(addRecentlyViewed(recipe))
+      navigation.navigate("Recipe", { recipeId });
+    }
   };
 
   useEffect(() => {
-    dispatch(fetchWeekRecipes());
-  }, []);
+    const loadData = async () => {
+      await dispatch(fetchRecipes());
+      await dispatch(fetchWeekRecipes());
+      dispatch(clearSearchResults());
+    };
+
+    loadData();
+  }, [dispatch]);
 
   const handleProfileClick = () => {
     navigation.navigate("Account");
@@ -133,7 +156,7 @@ export const Home = ({ navigation }) => {
       <View style={styles.recommendationContainer}>
         <View style={styles.flexRow}>
           <Text style={styles.categoryHeading}>
-            {searchResults.length ? "Search Results" : "Recommendations"}
+            {searchResults?.length > 0 ? "Search Results" : "Recommendations"}
           </Text>
         </View>
 
@@ -145,7 +168,7 @@ export const Home = ({ navigation }) => {
           {displayedRecipes.map((recipe) => (
             <TouchableOpacity
               key={recipe._id}
-              onPress={() => handleDishClick(recipe._id)}
+              onPress={() => handleDishClick(recipe._id,recipe)}
             >
               <View style={styles.recImgContainer}>
                 <Image
@@ -171,20 +194,28 @@ export const Home = ({ navigation }) => {
       </View>
 
       {/* Recipes of the week section */}
+      <Text style={styles.categoryHeading}>Recipes of the Week</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {weekRecipes?.map((recipe) => (
-          <View key={recipe._id} style={styles.recipeWeekImgContainer}>
-            <Image
-              source={{ uri: recipe.image }}
-              style={styles.recipeWeekImg}
-            />
-            <View style={styles.textOverlay}>
-              <Text style={styles.weekRecipeText}>{recipe.title}</Text>
-              <Text style={styles.ownerText}>
-                By {recipe.author || "Unknown"}
-              </Text>
+          <TouchableOpacity
+            key={recipe._id}
+            onPress={() =>
+              navigation.navigate("Recipe", { recipeId: recipe._id })
+            }
+          >
+            <View key={recipe._id} style={styles.recipeWeekImgContainer}>
+              <Image
+                source={{ uri: recipe.image }}
+                style={styles.recipeWeekImg}
+              />
+              <View style={styles.textOverlay}>
+                <Text style={styles.weekRecipeText}>{recipe.title}</Text>
+                <Text style={styles.ownerTextInRecipesWeek}>
+                  By {recipe.author || "Unknown"}
+                </Text>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </ScrollView>
@@ -237,7 +268,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F8F8FF",
     borderRadius: 15,
-    marginRight: 15,
+    marginRight: 5,
   },
   categoryImage: {
     width: "70%",
@@ -281,11 +312,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     padding: 5,
   },
-  ownerText: {
-    fontFamily: "Primary-Regular",
-    color: "black",
-    fontSize: 12,
-  },
   recipeWeekContainer: {
     marginTop: 1,
     backgroundColor: "",
@@ -297,6 +323,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginRight: 15,
     position: "relative",
+    marginTop: 5,
   },
   recipeWeekImg: {
     width: "100%",
@@ -321,9 +348,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   ownerText: {
-    color: "white",
+    color: "black",
     textAlign: "right",
     fontFamily: "Primary-Regular",
     fontSize: 10,
   },
+  ownerTextInRecipesWeek:{
+    color: "white",
+    textAlign: "right",
+    fontFamily: "Primary-Regular",
+    fontSize: 10,
+  }
 });
