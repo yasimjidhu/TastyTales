@@ -2,64 +2,67 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View, ScrollView, Image, TouchableOpacity } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import Ionicons from "react-native-vector-icons/Ionicons";
-import Constants from 'expo-constants';
-import { useSelector } from 'react-redux';
-import { getUserProfile } from '../store/slices/user';
+import Constants from "expo-constants";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserProfile } from "../store/slices/user";
+import { fetchWeekRecipes } from "../store/slices/recipe";
 
 export const Home = ({ navigation }) => {
-  const [recipes, setRecipes] = useState([]);
-    const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL
+
+  const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
+  const dispatch = useDispatch();
 
   const { user, loading, error } = useSelector((state) => state.user);
-  const { searchResults } = useSelector((state) => state.recipes);
+  const { recipes,searchResults, weekRecipes } = useSelector((state) => state.recipes);
 
   const handleCategoryPress = (category) => {
-        navigation.navigate('Category',{category})
-    }
+    navigation.navigate("Category", { category });
+  };
 
   const handleDishClick = (recipeId) => {
-        navigation.navigate('Recipe', { recipeId });
-    }
+    navigation.navigate("Recipe", { recipeId });
+  };
 
-  const fetchRecipes = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/recipes`);
-      const data = await response.json();
-      setRecipes(data);
-    } catch (error) {
-            console.error('Error fetching recipes:', error);
-        }
-    }
   useEffect(() => {
-    fetchRecipes();
-        getUserProfile()
+    dispatch(fetchWeekRecipes());
   }, []);
 
   const handleProfileClick = () => {
     navigation.navigate("Account");
   };
-
   const displayedRecipes = searchResults.length ? searchResults : recipes;
 
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
-
     >
       <View style={styles.flexRow}>
         <View style={styles.welcomeDiv}>
-                    <Text style={{ fontFamily: 'Primary-Regular', fontSize: 24 }}>Hello <Text style={styles.userName}>{user?.name?.toUpperCase()}</Text></Text>
-                    <Text style={{ fontFamily: 'Primary-ExtraBold', fontSize: 24 }}>
+          <Text style={{ fontFamily: "Primary-Regular", fontSize: 24 }}>
+            Hello{" "}
+            <Text style={styles.userName}>{user?.name?.toUpperCase()}</Text>
+          </Text>
+          <Text style={{ fontFamily: "Primary-ExtraBold", fontSize: 24 }}>
             What would you like
           </Text>
-                    <Text style={{ fontFamily: 'Primary-ExtraBold', fontSize: 24 }}>to cook today?</Text>
+          <Text style={{ fontFamily: "Primary-ExtraBold", fontSize: 24 }}>
+            to cook today?
+          </Text>
         </View>
         <TouchableOpacity onPress={handleProfileClick}>
           <View style={styles.profileDiv}>
-                    {
-                        user?.image ? (
-                            <Image source={{ uri: user.image }} style={{ width: 70, height: 70, borderRadius: 35, borderWidth: 2, borderColor: 'teal' }} />
+            {user?.image ? (
+              <Image
+                source={{ uri: user.image }}
+                style={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: 35,
+                  borderWidth: 2,
+                  borderColor: "teal",
+                }}
+              />
             ) : (
               <Ionicons name="person-circle-outline" size={70} color="white" />
             )}
@@ -83,20 +86,44 @@ export const Home = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           style={styles.categoryBoxContainer}
         >
-                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('breakfast')}>
-                        <Image source={require('../../assets/images/breakFast.png')} style={styles.categoryImage} />
+          <TouchableOpacity
+            style={styles.categoryBox}
+            onPress={() => handleCategoryPress("breakfast")}
+          >
+            <Image
+              source={require("../../assets/images/breakFast.png")}
+              style={styles.categoryImage}
+            />
             <Text style={styles.categoryText}>BreakFast</Text>
           </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('lunch')}>
-                        <Image source={require('../../assets/images/lunch.png')} style={styles.categoryImage} />
+          <TouchableOpacity
+            style={styles.categoryBox}
+            onPress={() => handleCategoryPress("lunch")}
+          >
+            <Image
+              source={require("../../assets/images/lunch.png")}
+              style={styles.categoryImage}
+            />
             <Text style={styles.categoryText}>Lunch</Text>
           </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('dinner')}>
-                        <Image source={require('../../assets/images/dinner.png')} style={styles.categoryImage} />
+          <TouchableOpacity
+            style={styles.categoryBox}
+            onPress={() => handleCategoryPress("dinner")}
+          >
+            <Image
+              source={require("../../assets/images/dinner.png")}
+              style={styles.categoryImage}
+            />
             <Text style={styles.categoryText}>Dinner</Text>
           </TouchableOpacity>
-                    <TouchableOpacity style={styles.categoryBox} onPress={()=>handleCategoryPress('dessert')}>
-                        <Image source={require('../../assets/images/dessert.png')} style={styles.categoryImage} />
+          <TouchableOpacity
+            style={styles.categoryBox}
+            onPress={() => handleCategoryPress("dessert")}
+          >
+            <Image
+              source={require("../../assets/images/dessert.png")}
+              style={styles.categoryImage}
+            />
             <Text style={styles.categoryText}>Dessert</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -144,38 +171,22 @@ export const Home = ({ navigation }) => {
       </View>
 
       {/* Recipes of the week section */}
-      <View style={styles.recipeWeekContainer}>
-        <View style={styles.flexRow}>
-          <Text style={styles.categoryHeading}>Recipes Of The Week</Text>
-          <Text style={styles.seeAll}>See all</Text>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryBoxContainer}
-        >
-          <View style={styles.recipeWeekImgContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {weekRecipes?.map((recipe) => (
+          <View key={recipe._id} style={styles.recipeWeekImgContainer}>
             <Image
-              source={require("../../assets/images/pasta.jpg")}
+              source={{ uri: recipe.image }}
               style={styles.recipeWeekImg}
             />
             <View style={styles.textOverlay}>
-              <Text style={styles.weekRecipeText}>Creamy Pasta</Text>
-              <Text style={styles.ownerText}>By Charles peter</Text>
+              <Text style={styles.weekRecipeText}>{recipe.title}</Text>
+              <Text style={styles.ownerText}>
+                By {recipe.author || "Unknown"}
+              </Text>
             </View>
           </View>
-          <View style={styles.recipeWeekImgContainer}>
-            <Image
-              source={require("../../assets/images/juice.jpg")}
-              style={styles.recipeWeekImg}
-            />
-            <View style={styles.textOverlay}>
-              <Text style={styles.weekRecipeText}>Creamy Pasta</Text>
-              <Text style={styles.ownerText}>By Charles peter</Text>
-            </View>
-          </View>
-        </ScrollView>
-      </View>
+        ))}
+      </ScrollView>
     </ScrollView>
   );
 };

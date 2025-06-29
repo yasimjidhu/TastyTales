@@ -11,12 +11,10 @@ export default function Category({navigation}) {
  
     const { category } = route.params;
     const recipes = useSelector((state) => state.recipes.recipes);
-    console.log('recipes in Category screen', recipes?.length);
     const dispatch = useDispatch()
     
     useEffect(()=>{
         if(category){
-            console.log('category in Category screen', category)
             dispatch(fetchCategoryWiseRecipes({category,page:1}))
         }
     },[category,dispatch])
