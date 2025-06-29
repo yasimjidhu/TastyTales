@@ -8,11 +8,16 @@ import {
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { addRecentlyViewed } from "../store/slices/recipe";
 
 export default function ListRecipes({ recipes, fetchMore }) {
   const navigation = useNavigation();
-  const handleDishClick = (id) => {
-    if (id) {
+  const dispatch = useDispatch()
+
+  const handleDishClick = (id,recipe) => {
+    if (id && recipe) {
+      dispatch(addRecentlyViewed(recipe))
       navigation.navigate("Recipe", { recipeId: id });
     } else {
       console.warn("Recipe ID is not available");
@@ -37,7 +42,7 @@ export default function ListRecipes({ recipes, fetchMore }) {
           {recipes?.map((recipe, index) => (
             <TouchableOpacity
               key={`${recipe._id}_${index}`} 
-              onPress={() => handleDishClick(recipe._id)}
+              onPress={() => handleDishClick(recipe._id,recipe)}
               style={styles.cardContainer}
             >
               <View style={styles.recImgContainer}>
