@@ -112,12 +112,31 @@ export const searchRecipes = createAsyncThunk(
   }
 );
 
+export const fetchWeekRecipes = createAsyncThunk(
+  "recipes/fetchWeekRecipes",
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('fetch week recipes called')
+      const response = await fetch(`${API_URL}/api/recipes/week`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'failed to retrieve top recipes of the week');
+      }
+      const data = await response.json();
+      return data; 
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch recipes of the week");
+    }
+  }
+);
+
 
 const initialState = {
   recipes: [],
   loading: false,
   error: null,
   searchResults: [],
+  weekRecipes: [],
   totalPages: 0,
   currentPage: 1,
 };
@@ -228,6 +247,18 @@ const recipeSlice = createSlice({
       .addCase(searchRecipes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Search failed';
+      })
+      .addCase(fetchWeekRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchWeekRecipes.fulfilled, (state, action) => {
+        state.weekRecipes = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchWeekRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

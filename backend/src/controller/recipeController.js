@@ -139,6 +139,16 @@ const searchRecipes = async (req, res) => {
     });
 }
 
+const getRecipesOfTheWeek = async (req, res) => {
+    try {
+        const recipes = await Recipe.find().sort({ likes: -1 }).limit(5);
+        res.json(recipes);
+    } catch (error) {
+        console.error("Error fetching top recipes:", error);
+        res.status(500).json({ error: "Failed to fetch recipes of the week" });
+    }
+}
+
 module.exports = {
     addRecipe,
     getAll,
@@ -148,5 +158,6 @@ module.exports = {
     likeOrUnlike,
     saveOrUnsave,
     addReview,
-    searchRecipes
+    searchRecipes,
+    getRecipesOfTheWeek
 }

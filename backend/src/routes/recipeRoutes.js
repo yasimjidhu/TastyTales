@@ -8,6 +8,8 @@ router.post("/",recipeController.addRecipe)
 
 router.get('/search', recipeController.searchRecipes);
 
+router.get('/week', recipeController.getRecipesOfTheWeek);
+
 router.get("/:id",recipeController.getOne);
 
 router.get("/",recipeController.getAll)
