@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String, required: true },
   userName: { type: String },
@@ -26,7 +26,7 @@ const RecipeSchema = new mongoose.Schema({
   cookTime: { type: Number, default: 0 },
   servings: { type: Number, default: 1 },
   isVegetarian: { type: Boolean, default: false },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   reviews: [reviewSchema],
 }, { timestamps: true });
 

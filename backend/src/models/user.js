@@ -6,9 +6,9 @@ const UserSchema = new mongoose.Schema({
   password: String,
   image: { type: String, default: ""},
   phone: { type: String, default: "" },
-  likedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
-  savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
-  madeItRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }]
+  likedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'recipes' }],
+  savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'recipes' }],
+  madeItRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'recipes' }]
 
 
 }, { timestamps: true });

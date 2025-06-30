@@ -79,19 +79,25 @@ const saveOrUnsave = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
+
         if (user.savedRecipes.includes(recipeId)) {
             user.savedRecipes = user.savedRecipes.filter(id => id.toString() !== recipeId);
-            await user.save();
-            return res.json({ message: "Recipe unsaved", user });
+        } else {
+            user.savedRecipes.push(recipeId);
         }
-        user.savedRecipes.push(recipeId);
+        
         await user.save();
-        return res.json({ message: "Recipe saved", user });
+
+        const updatedUser = await User.findById(userId).populate("savedRecipes");
+
+        return res.json({ message: "Updated", savedRecipes: updatedUser.savedRecipes });
+        
     } catch (error) {
         console.error("Error saving recipe:", error);
         return res.status(500).json({ error: "Failed to save recipe" });
     }
 }
+
 
 const addReview = async (req, res) => {
     const { recipeId } = req.params;

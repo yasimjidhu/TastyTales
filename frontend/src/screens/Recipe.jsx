@@ -3,13 +3,12 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { addReview, fetchRecipe } from '../store/slices/recipe';
-import { likeOrUnlikeRecipe, saveOrUnsaveRecipe } from '../store/slices/user';
+import { addReview, fetchRecipe, saveOrUnsaveRecipe } from '../store/slices/recipe';
+import { likeOrUnlikeRecipe } from '../store/slices/user';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Recipe({navigation}) {
-    const [isSaved, setIsSaved] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showReviewsList, setShowReviewsList] = useState(false);
     const [newReview, setNewReview] = useState('');
@@ -28,13 +27,7 @@ export default function Recipe({navigation}) {
         if (recipeId) {
             dispatch(fetchRecipe(recipeId));
         }
-    }, [recipeId, dispatch]);
-
-    useEffect(() => {
-        if (savedRecipes.length > 0 && user) {
-            setIsSaved(user.savedRecipes?.includes(recipeId));
-        }
-    }, [recipe, user, recipeId]);
+    }, [recipeId, dispatch])
 
     const handleLikeOrUnlike = () => {
         dispatch(likeOrUnlikeRecipe(recipeId));
@@ -126,6 +119,7 @@ export default function Recipe({navigation}) {
         : "4.8";
 
     const isLikedByUser = user?.likedRecipes?.includes(recipeId);
+    const isSaved = savedRecipes?.some((r) => r._id === recipeId);
 
     return (
         <View style={styles.container}>

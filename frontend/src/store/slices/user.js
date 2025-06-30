@@ -162,30 +162,6 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
   }
 );
 
-export const saveOrUnsaveRecipe = createAsyncThunk(
-  'user/saveOrUnsaveRecipe',  
-  async (recipeId, { rejectWithValue }) => {
-    const token = await AsyncStorage.getItem('token'); 
-
-    try {
-      const response = await fetch(`${API_URL}/api/recipes/${recipeId}/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to save/unsave recipe');
-      }
-      const data = await response.json();
-      return data?.user;
-    } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');
-    }
-  }
-);
 
 const initialState = {
   user: null,
@@ -284,20 +260,6 @@ const userSlice = createSlice({
         }
       }) 
       .addCase(likeOrUnlikeRecipe.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(saveOrUnsaveRecipe.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(saveOrUnsaveRecipe.fulfilled, (state, action) => {
-        state.loading = false;
-        if (state.user) {
-          state.user.savedRecipes = action.payload.savedRecipes; // Update saved recipes in user state
-        }
-      })
-      .addCase(saveOrUnsaveRecipe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
