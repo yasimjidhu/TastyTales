@@ -12,7 +12,7 @@ import { addRecentlyViewed, fetchSavedRecipes } from "../store/slices/recipe";
 
 export default function BookMark({ navigation }) {
   const dispatch = useDispatch();
-  const { recentlyViewed, madeIt, bookmarkedRecipes, savedRecipes } =
+  const { recentlyViewed, madeIt, savedRecipes } =
     useSelector((state) => state.recipes);
 
   const handleDishClick = (id, recipe) => {
@@ -83,8 +83,8 @@ export default function BookMark({ navigation }) {
                 key={recipe._id}
                 onPress={() => {
                   if (index === 2 && madeIt.length > 3) {
-                    navigation.navigate("ViewAllMadeItRecipes", {
-                      recipes: madeIt,
+                    navigation.navigate("ViewAll", {
+                      recipesIds: madeIt.map((r) => r._id),
                     });
                   } else {
                     handleDishClick(recipe._id, recipe);
@@ -117,8 +117,8 @@ export default function BookMark({ navigation }) {
           {savedRecipes && savedRecipes.length > 3 && (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("ViewAllSavedRecipes", {
-                  recipes: savedRecipes,
+                navigation.navigate("ViewAll1", {
+                  recipesIds: savedRecipes.map((recipe) => recipe._id),
                 })
               }
               style={styles.seeAllButton}
@@ -185,8 +185,8 @@ export default function BookMark({ navigation }) {
                   style={styles.sideCard}
                   onPress={() => {
                     if (savedRecipes.length > 3) {
-                      navigation.navigate("ViewAllSavedRecipes", {
-                        recipes: savedRecipes,
+                      navigation.navigate("ViewAll", {
+                        recipesIds: savedRecipes.map((r) => r._id),
                       });
                     } else {
                       handleDishClick(
