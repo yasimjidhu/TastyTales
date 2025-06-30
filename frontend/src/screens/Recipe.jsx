@@ -13,7 +13,7 @@ export default function Recipe({navigation}) {
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showReviewsList, setShowReviewsList] = useState(false);
     const [newReview, setNewReview] = useState('');
-    const [newRating, setNewRating] = useState(0);
+    const [newRating, setNewRating] = useState(0); 
     const [checkedIngredients, setCheckedIngredients] = useState(new Set());
 
     const dispatch = useDispatch();
@@ -22,6 +22,7 @@ export default function Recipe({navigation}) {
     const { recipeId } = route.params;
     const recipe = useSelector((state) => state.recipes.recipes.find((r) => r._id == recipeId));
     const { user, loading, error } = useSelector((state) => state.user);
+    const {savedRecipes} = useSelector((state)=>state.recipes)
 
     useEffect(() => {
         if (recipeId) {
@@ -30,7 +31,7 @@ export default function Recipe({navigation}) {
     }, [recipeId, dispatch]);
 
     useEffect(() => {
-        if (recipe && user) {
+        if (savedRecipes.length > 0 && user) {
             setIsSaved(user.savedRecipes?.includes(recipeId));
         }
     }, [recipe, user, recipeId]);
