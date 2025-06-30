@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet, SafeAreaView, Image, ScrollView, Toucha
 import { ProgressBar } from 'react-native-paper';
 import TimerComponent from '../components/Timer';
 import QuickActionsComponent from '../components/QuickActions';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addMadeItRecipe } from '../store/slices/recipe';
 
 const CookingStepsScreen = ({ route, navigation }) => {
@@ -12,6 +12,8 @@ const CookingStepsScreen = ({ route, navigation }) => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [stepNotes, setStepNotes] = useState({});
     const [completedSteps, setCompletedSteps] = useState({});
+
+    const {savedRecipes} = useSelector((state) => state.recipes);
 
     const dispatch = useDispatch();
 
@@ -53,6 +55,7 @@ const CookingStepsScreen = ({ route, navigation }) => {
         dispatch(addMadeItRecipe(recipe?._id));
         navigation.goBack()
     }
+    
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
