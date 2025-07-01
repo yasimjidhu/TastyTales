@@ -183,9 +183,9 @@ export const addMadeItRecipe = createAsyncThunk(
 );
 
 export const saveOrUnsaveRecipe = createAsyncThunk(
-  'recipes/saveOrUnsaveRecipe',  
+  'recipes/saveOrUnsaveRecipe',
   async (recipeId, { rejectWithValue }) => {
-    const token = await AsyncStorage.getItem('token'); 
+    const token = await AsyncStorage.getItem('token');
 
     try {
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/save`, {
@@ -234,6 +234,31 @@ export const fetchSavedRecipes = createAsyncThunk(
   }
 );
 
+export const fetchSuggestedRecipes = createAsyncThunk(
+  "recipes/fetchSuggestions",
+  async (availableIngredients) => {
+    console.log('Fetching suggested recipes with ingredients:', availableIngredients);
+    const token = await AsyncStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/recipes/suggest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ availableIngredients }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return rejectWithValue(errorData.error || "Failed to fetch suggested recipes");
+
+    }
+    const data = await response.json();
+    return data
+  }
+);
+
+
 
 const initialState = {
   recipes: [],
@@ -244,6 +269,7 @@ const initialState = {
   recentlyViewed: [],
   savedRecipes: [],
   madeIt: [],
+  suggestions:[],
   totalPages: 0,
   currentPage: 1,
 };
@@ -276,6 +302,9 @@ const recipeSlice = createSlice({
     clearRecentlyViewed: (state) => {
       state.recentlyViewed = [];
     },
+    clearSuggestions:(state)=>{
+      state.suggestions = [];
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -430,6 +459,18 @@ const recipeSlice = createSlice({
       .addCase(saveOrUnsaveRecipe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(fetchSuggestedRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSuggestedRecipes.fulfilled, (state, action) => {
+        state.loading = false;
+        state.suggestions = action.payload;
+      })
+      .addCase(fetchSuggestedRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
 
   },
@@ -442,6 +483,7 @@ export const {
   clearSearchResults,
   addRecentlyViewed,
   clearRecentlyViewed,
+  clearSuggestions
 } = recipeSlice.actions;
 
 export default recipeSlice.reducer;

@@ -41,7 +41,7 @@ export default function ListRecipes({ recipes, fetchMore }) {
         <View style={styles.gridContainer}>
           {recipes?.map((recipe, index) => (
             <TouchableOpacity
-              key={`${recipe._id}_${index}`} 
+              key={`${recipe._id}_${index}`}
               onPress={() => handleDishClick(recipe._id,recipe)}
               style={styles.cardContainer}
             >
@@ -59,6 +59,12 @@ export default function ListRecipes({ recipes, fetchMore }) {
                 <Text style={styles.recipeText}>
                   {recipe?.title || "Untitled"}
                 </Text>
+                {/* Show match percentage if available */}
+                {recipe.matchPercentage !== undefined && (
+                  <Text style={styles.matchText}>
+                    Match: {recipe.matchPercentage}%
+                  </Text>
+                )}
                 <Text style={styles.ownerText}>
                   {recipe?.author || "By Unknown"}
                 </Text>
@@ -133,4 +139,10 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 16,
   },
+  matchText: {
+  fontFamily: "Primary-Regular",
+  color: "green",
+  fontSize: 15,
+  marginTop: 2,
+},
 });
