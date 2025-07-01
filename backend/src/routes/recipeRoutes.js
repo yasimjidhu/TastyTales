@@ -16,6 +16,8 @@ router.get('/madeIt', authMiddleware, recipeController.getMadeItRecipes);
 
 router.get('/saved', authMiddleware, recipeController.getSavedRecipes);
 
+router.post('/suggest',authMiddleware,recipeController.getSuggestedRecipes)
+
 router.get("/:id",recipeController.getOne);
 
 router.get("/",recipeController.getAll)

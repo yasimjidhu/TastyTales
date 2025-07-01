@@ -85,13 +85,13 @@ const saveOrUnsave = async (req, res) => {
         } else {
             user.savedRecipes.push(recipeId);
         }
-        
+
         await user.save();
 
         const updatedUser = await User.findById(userId).populate("savedRecipes");
 
         return res.json({ message: "Updated", savedRecipes: updatedUser.savedRecipes });
-        
+
     } catch (error) {
         console.error("Error saving recipe:", error);
         return res.status(500).json({ error: "Failed to save recipe" });
@@ -192,30 +192,70 @@ const getMadeItRecipes = async (req, res) => {
 }
 
 const getSavedRecipes = async (req, res) => {
-  const userId = req.user._id;
+    const userId = req.user._id;
 
-  try {
+    try {
 
-    const user = await User.findById(userId).populate({
-      path: "savedRecipes",
-      model: "recipes", 
-    });
+        const user = await User.findById(userId).populate({
+            path: "savedRecipes",
+            model: "recipes",
+        });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const savedRecipes = user.savedRecipes;
+
+        if (!savedRecipes || savedRecipes.length === 0) {
+            return res.json([]);
+        }
+
+        res.json(savedRecipes);
+    } catch (error) {
+        console.error("Error fetching saved recipes:", error);
+        res.status(500).json({ error: "Failed to retrieve saved recipes" });
     }
+};
 
-    const savedRecipes = user.savedRecipes;
 
-    if (!savedRecipes || savedRecipes.length === 0) {
-      return res.json([]);
+const getSuggestedRecipes = async (req, res) => {
+    const { availableIngredients } = req.body;
+    console.log('available ingredients', availableIngredients);
+
+    try {
+        if (!availableIngredients || !Array.isArray(availableIngredients)) {
+            return res.status(400).json({ error: "Invalid ingredients list" });
+        }
+
+        // Clean up user ingredients: lowercase & trim spaces
+        const cleanedAvailableIngredients = availableIngredients.map(ing => ing.toLowerCase().trim());
+
+        const recipes = await Recipe.find({});
+
+        const suggestions = recipes.map((recipe) => {
+            const matched = recipe.ingredients.filter((ing) =>
+                cleanedAvailableIngredients.includes(ing?.name?.toLowerCase().trim())
+            );
+
+            const matchPercentage = (matched.length / recipe.ingredients.length) * 100;
+
+            const recipeObj = recipe.toObject();
+
+            return {
+                ...recipeObj,
+                matchPercentage: Math.round(matchPercentage),
+            };
+        })
+            .filter(recipe => recipe.matchPercentage > 0) // Only return recipes with matches
+            .sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+        res.json(suggestions);
+
+    } catch (error) {
+        console.error("Error fetching suggested recipes:", error);
+        return res.status(500).json({ error: "Failed to fetch suggested recipes" });
     }
-
-    res.json(savedRecipes);
-  } catch (error) {
-    console.error("Error fetching saved recipes:", error);
-    res.status(500).json({ error: "Failed to retrieve saved recipes" });
-  }
 };
 
 
@@ -232,5 +272,6 @@ module.exports = {
     getRecipesOfTheWeek,
     markAsMadeIt,
     getMadeItRecipes,
-    getSavedRecipes
+    getSavedRecipes,
+    getSuggestedRecipes
 }

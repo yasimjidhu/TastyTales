@@ -16,11 +16,7 @@ export default function ViewAll() {
   const visibleRecipes = filteredRecipes.slice(0, visibleCount);
 
   const fetchMoreRecipes = () => {
-    console.log('Total available:', filteredRecipes.length);
-    console.log('Currently visible:', visibleCount);
-
     if (visibleCount < filteredRecipes.length) {
-      console.log("Fetching more recipes in ViewAll...");
       setVisibleCount(prevCount => prevCount + 4);
     }
   };
