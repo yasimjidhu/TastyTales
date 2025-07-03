@@ -4,7 +4,7 @@
   "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev" : "nodemon src/server.js"
+    "dev": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.12.2"
+    "mongoose": "^8.12.2",
+    "node-fetch": "^3.3.2"
   }
 }

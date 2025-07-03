@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import ListRecipes from "../components/ListRecipes";
 import { useFocusEffect } from "@react-navigation/native";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function RecipeSuggester() {
   const [ingredients, setIngredients] = useState([]);
@@ -73,9 +74,9 @@ export default function RecipeSuggester() {
       </TouchableOpacity>
 
       {loading ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+         <LoadingSpinner message="Fetching Recipes..." />
       ) : (
-        <ListRecipes recipes={suggestions} />
+        <ListRecipes recipes={suggestions} fetchMore={() => {}}/>
       )}
     </View>
   );

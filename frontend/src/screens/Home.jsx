@@ -13,12 +13,14 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserProfile } from "../store/slices/user";
+
 import {
   addRecentlyViewed,
   clearSearchResults,
   fetchRecipes,
   fetchWeekRecipes,
 } from "../store/slices/recipe";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export const Home = ({ navigation }) => {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
@@ -33,9 +35,9 @@ export const Home = ({ navigation }) => {
     navigation.navigate("Category", { category });
   };
 
-  const handleDishClick = (recipeId,recipe) => {
-    if(recipeId && recipe){
-      dispatch(addRecentlyViewed(recipe))
+  const handleDishClick = (recipeId, recipe) => {
+    if (recipeId && recipe) {
+      dispatch(addRecentlyViewed(recipe));
       navigation.navigate("Recipe", { recipeId });
     }
   };
@@ -54,6 +56,10 @@ export const Home = ({ navigation }) => {
     navigation.navigate("Account");
   };
   const displayedRecipes = searchResults.length ? searchResults : recipes;
+
+  {
+    loading && <LoadingSpinner message="Fetching Recipes..." />;
+  }
 
   return (
     <ScrollView
@@ -168,7 +174,7 @@ export const Home = ({ navigation }) => {
           {displayedRecipes.map((recipe) => (
             <TouchableOpacity
               key={recipe._id}
-              onPress={() => handleDishClick(recipe._id,recipe)}
+              onPress={() => handleDishClick(recipe._id, recipe)}
             >
               <View style={styles.recImgContainer}>
                 <Image
@@ -353,10 +359,10 @@ const styles = StyleSheet.create({
     fontFamily: "Primary-Regular",
     fontSize: 10,
   },
-  ownerTextInRecipesWeek:{
+  ownerTextInRecipesWeek: {
     color: "white",
     textAlign: "right",
     fontFamily: "Primary-Regular",
     fontSize: 10,
-  }
+  },
 });

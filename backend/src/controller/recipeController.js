@@ -221,8 +221,7 @@ const getSavedRecipes = async (req, res) => {
 
 const getSuggestedRecipes = async (req, res) => {
     const { availableIngredients } = req.body;
-    console.log('available ingredients', availableIngredients);
-
+    const name = req.user?.name
     try {
         if (!availableIngredients || !Array.isArray(availableIngredients)) {
             return res.status(400).json({ error: "Invalid ingredients list" });
@@ -244,6 +243,7 @@ const getSuggestedRecipes = async (req, res) => {
 
             return {
                 ...recipeObj,
+                userName:name,
                 matchPercentage: Math.round(matchPercentage),
             };
         })

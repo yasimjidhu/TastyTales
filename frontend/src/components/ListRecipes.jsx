@@ -2,9 +2,9 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Image,
+  FlatList,
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -13,66 +13,61 @@ import { addRecentlyViewed } from "../store/slices/recipe";
 
 export default function ListRecipes({ recipes, fetchMore }) {
   const navigation = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const handleDishClick = (id,recipe) => {
+  const handleDishClick = (id, recipe) => {
     if (id && recipe) {
-      dispatch(addRecentlyViewed(recipe))
+      dispatch(addRecentlyViewed(recipe));
       navigation.navigate("Recipe", { recipeId: id });
-    } else {
-      console.warn("Recipe ID is not available");
     }
   };
 
-  const handleScroll = (event) => {
-    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-    const isEndReached =
-      contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
-
-    if (isEndReached) {
-      console.log("End reached, fetching more recipes...");
-      fetchMore();
-    }
+  const handleEndReached = () => {
+    console.log("End reached, fetching more recipes...");
+    fetchMore();
   };
+
   return (
     <View style={styles.recommendationContainer}>
       <View style={styles.flexRow}></View>
-      <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
-        <View style={styles.gridContainer}>
-          {recipes?.map((recipe, index) => (
-            <TouchableOpacity
-              key={`${recipe._id}_${index}`}
-              onPress={() => handleDishClick(recipe._id,recipe)}
-              style={styles.cardContainer}
-            >
-              <View style={styles.recImgContainer}>
-                <Image
-                  source={
-                    recipe?.image
-                      ? { uri: recipe.image }
-                      : require("../../assets/images/pasta.jpg")
-                  }
-                  style={styles.RecImg}
-                />
-              </View>
-              <View style={styles.recTextContainer}>
-                <Text style={styles.recipeText}>
-                  {recipe?.title || "Untitled"}
+      <FlatList
+        data={recipes}
+        numColumns={2}
+        keyExtractor={(item, index) => `${item._id}_${index}`}
+        renderItem={({ item, index }) => (
+          <TouchableOpacity
+            key={`${item._id}_${index}`}
+            onPress={() => handleDishClick(item._id, item)}
+            style={styles.cardContainer}
+          >
+            <View style={styles.recImgContainer}>
+              <Image
+                source={
+                  item?.image
+                    ? { uri: item.image }
+                    : require("../../assets/images/pasta.jpg")
+                }
+                style={styles.RecImg}
+              />
+            </View>
+            <View style={styles.recTextContainer}>
+              <Text style={styles.recipeText}>{item?.title || "Untitled"}</Text>
+              {item.matchPercentage !== undefined && (
+                <Text style={styles.matchText}>
+                  Match: {item.matchPercentage}%
                 </Text>
-                {/* Show match percentage if available */}
-                {recipe.matchPercentage !== undefined && (
-                  <Text style={styles.matchText}>
-                    Match: {recipe.matchPercentage}%
-                  </Text>
-                )}
-                <Text style={styles.ownerText}>
-                  {recipe?.author || "By Unknown"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+              )}
+              <Text style={styles.ownerText}>
+                {item?.userName || "By Unknown"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={styles.gridContainer}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        scrollEventThrottle={16}
+      />
     </View>
   );
 }
@@ -82,17 +77,16 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
+    paddingHorizontal: 4,
   },
-
   cardContainer: {
-    width: "48%", // Roughly half the screen with some spacing
+    width: "48%",
     marginBottom: 15,
     backgroundColor: "#F8F8FF",
     borderRadius: 15,
     overflow: "hidden",
+    marginHorizontal: "1%",
   },
   recImgContainer: {
     height: 140,
@@ -101,7 +95,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F0F0F0",
   },
-
   RecImg: {
     width: "100%",
     height: "100%",
@@ -110,19 +103,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  categoryHeading: {
-    fontFamily: "Primary-Bold",
-    fontSize: 20,
-  },
-  seeAll: {
-    fontFamily: "Primary-Bold",
-    fontSize: 16,
-    color: "teal",
-  },
-  recBoxContainer: {
-    marginTop: 10,
-    flexDirection: "row",
   },
   recipeText: {
     fontFamily: "Primary-Bold",
@@ -140,9 +120,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   matchText: {
-  fontFamily: "Primary-Regular",
-  color: "green",
-  fontSize: 15,
-  marginTop: 2,
-},
+    fontFamily: "Primary-Regular",
+    color: "green",
+    fontSize: 15,
+    marginTop: 2,
+  },
 });
