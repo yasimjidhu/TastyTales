@@ -1,24 +1,18 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const userController = require('../controller/userController')
+const userController = require("../controller/userController");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Register a new user
-router.post("/register",userController.register)
+// ---------- Public Routes ----------
+router.post("/register", userController.register);
+router.post("/login", userController.login);
 
-// Login
-router.post("/login",userController.login);
+// ---------- Protected Routes ----------
+router.use(authMiddleware);
 
-// Update user profile image
-router.post("/:userId/profile-image",userController.updateProfileImage);
-
-// get user profile
-router.get('/:userId',userController.getUserProfile);
-
-// Update user profile
-router.put('/:userId', userController.updateUserProfile);
+router.get("/:userId", userController.getUserProfile);
+router.put("/:userId", userController.updateUserProfile);
+router.post("/:userId/profile-image", userController.updateProfileImage);
 
 module.exports = router;

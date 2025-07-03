@@ -1,11 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector } from "react-redux";
 
+// Screens
 import { Home } from "../screens/Home";
 import BookMark from "../screens/BookMark";
 import Recipe from "../screens/Recipe";
@@ -26,15 +27,28 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+          let iconName = "";
 
-          if (route.name === "Home") iconName = focused ? "home" : "home-outline";
-          else if (route.name === "Suggest") iconName = focused ? "restaurant" : "restaurant-outline";
-          else if (route.name === "Add") iconName = "add";
-          else if (route.name === "Bookmarks") iconName = focused ? "bookmarks" : "bookmarks-outline";
-          else if (route.name === "Account") iconName = focused ? "person" : "person-outline";
+          switch (route.name) {
+            case "Home":
+              iconName = focused ? "home" : "home-outline";
+              break;
+            case "Suggest":
+              iconName = focused ? "restaurant" : "restaurant-outline";
+              break;
+            case "Add":
+              iconName = "add";
+              break;
+            case "Bookmarks":
+              iconName = focused ? "bookmarks" : "bookmarks-outline";
+              break;
+            case "Account":
+              iconName = focused ? "person" : "person-outline";
+              break;
+            default:
+              break;
+          }
 
-          // Special styling for the Add button
           if (route.name === "Add") {
             return (
               <View style={styles.plusButton}>
@@ -45,10 +59,7 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarLabel: ({ focused }) => {
-          if (route.name === "Add") return "";
-          return route.name;
-        },
+        tabBarLabel: route.name === "Add" ? "" : route.name,
         tabBarActiveTintColor: "teal",
         tabBarInactiveTintColor: "gray",
       })}
@@ -65,8 +76,8 @@ function MainTabs() {
 function AuthStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Signup" component={Signup} />
+      <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
@@ -102,5 +113,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
 });

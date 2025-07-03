@@ -4,6 +4,6 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get('/:category',categoryController.getCategoryWiseRecipes)
+router.get('/:category',authMiddleware,categoryController.getCategoryWiseRecipes)
 
 module.exports = router;
