@@ -11,7 +11,7 @@ router.get('/search', recipeController.searchRecipes);
 router.get('/week', recipeController.getRecipesOfTheWeek);
 
 router.post('/madeIt',authMiddleware,recipeController.markAsMadeIt);
-
+    
 router.get('/madeIt', authMiddleware, recipeController.getMadeItRecipes);
 
 router.get('/saved', authMiddleware, recipeController.getSavedRecipes);
