@@ -5,6 +5,7 @@ import { useRoute } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addReview, fetchRecipe, saveOrUnsaveRecipe } from '../store/slices/recipe';
 import { likeOrUnlikeRecipe } from '../store/slices/user';
+import { renderStars } from '../components/RenderStart';
 
 const { width, height } = Dimensions.get('window');
 
@@ -91,27 +92,6 @@ export default function Recipe({navigation}) {
         } catch (error) {
             console.error('Error sharing recipe:', error.message);
         }
-    };
-
-    const renderStars = (rating, onPress = null, size = 20) => {
-        return (
-            <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <TouchableOpacity
-                        key={star}
-                        onPress={() => onPress && onPress(star)}
-                        disabled={!onPress}
-                    >
-                        <Ionicons
-                            name={star <= rating ? "star" : "star-outline"}
-                            size={size}
-                            color="#FFD700"
-                            style={{ marginRight: 2 }}
-                        />
-                    </TouchableOpacity>
-                ))}
-            </View>
-        );
     };
 
     const averageRating = recipe?.reviews?.length > 0
@@ -719,10 +699,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#2C3E50',
         marginBottom: 12,
-    },
-    starsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
     },
     reviewInputSection: {
         marginBottom: 24,
