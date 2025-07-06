@@ -1,4 +1,6 @@
 import { TouchableOpacity, View } from "react-native";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import React from 'react';
 
 export const renderStars = (rating, onPress = null, size = 20) => {
   return (

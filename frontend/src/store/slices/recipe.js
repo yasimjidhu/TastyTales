@@ -50,6 +50,7 @@ export const addReview = createAsyncThunk(
   'recipes/addReview',
   async ({ recipeId, rating, comment, userName, userImage }, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/review`, {
         method: 'POST',
         headers: {
@@ -269,7 +270,7 @@ const initialState = {
   recentlyViewed: [],
   savedRecipes: [],
   madeIt: [],
-  suggestions:[],
+  suggestions: [],
   totalPages: 0,
   currentPage: 1,
 };
@@ -302,7 +303,7 @@ const recipeSlice = createSlice({
     clearRecentlyViewed: (state) => {
       state.recentlyViewed = [];
     },
-    clearSuggestions:(state)=>{
+    clearSuggestions: (state) => {
       state.suggestions = [];
     }
   },

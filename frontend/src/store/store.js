@@ -7,7 +7,7 @@ import persistedRecipeReducer from './persist';
 const store = configureStore({
   reducer: {
     recipes: persistedRecipeReducer,
-    user: userReducer
+    user: userReducer,
   },
 });
 
