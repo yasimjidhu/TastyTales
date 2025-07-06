@@ -17,6 +17,7 @@ import { useRoute } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addReview,
+  fetchPopularRecipes,
   fetchRecipe,
   saveOrUnsaveRecipe,
 } from "../store/slices/recipe";
@@ -44,11 +45,14 @@ export default function Recipe({ navigation }) {
     state.recipes.recipes.find((r) => r._id == recipeId)
   );
   const { user, loading, error } = useSelector((state) => state.user);
-  const { savedRecipes } = useSelector((state) => state.recipes);
+  const { savedRecipes, popularRecipes } = useSelector(
+    (state) => state.recipes
+  );
 
   useEffect(() => {
     if (recipeId) {
       dispatch(fetchRecipe(recipeId));
+      dispatch(fetchPopularRecipes());
     }
   }, [recipeId, dispatch]);
 
@@ -136,6 +140,8 @@ export default function Recipe({ navigation }) {
 
   const isLikedByUser = user?.likedRecipes?.includes(recipeId);
   const isSaved = savedRecipes?.some((r) => r._id === recipeId);
+  const isPopular = popularRecipes?.some((r) => r._id === recipeId)
+  console.log('isPopular',isPopular)
 
   return (
     <View style={styles.container}>
@@ -170,12 +176,13 @@ export default function Recipe({ navigation }) {
         </View>
 
         {/* Recipe Badge */}
-        <View style={styles.recipeBadge}>
-          <Ionicons name="restaurant-outline" size={16} color="#fff" />
-          <Text style={styles.badgeText}>Popular Recipe</Text>
-        </View>
+        {isPopular && (
+          <View style={styles.recipeBadge}>
+            <Ionicons name="restaurant-outline" size={16} color="#fff" />
+            <Text style={styles.badgeText}>Popular Recipe</Text>
+          </View>
+        )}
       </View>
-
       {/* Enhanced Scrollable Content */}
       <ScrollView
         style={styles.scrollContent}

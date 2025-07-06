@@ -20,7 +20,7 @@ const register = async (req, res) => {
         
         await user.save();
 
-        res.status(201).json({ user: { id: user._id, name: user.name, email: user.email }, message: "User registered successfully!" });
+        res.status(201).json({ user: { _id: user._id, name: user.name, email: user.email }, message: "User registered successfully!" });
     } catch (error) {
         console.error("Error during registration:", error);
         res.status(500).json({ error: "Registration failed" });
@@ -48,7 +48,7 @@ const login = async (req, res) => {
         res.json({
             token,
             user: {
-                id: user._id,
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 image: user.image
@@ -64,11 +64,12 @@ const login = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
-
+    console.log('get user called in backend',userId)
     try {
         const user = await User.findById(userId).select("-password").lean();
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        console.log('user in backend',user) 
         res.json(user);
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -90,6 +91,7 @@ const updateProfileImage = async (req, res) => {
         const user = await User.findByIdAndUpdate(userId, { image: imageUri }, { new: true }).select("-password");
         if (!user) return res.status(404).json({ error: "User not found" });
 
+        console.log('updated user with image',user)
         res.json({ message: "Profile image updated successfully", user });
     } catch (error) {
         console.error("Error updating profile image:", error);

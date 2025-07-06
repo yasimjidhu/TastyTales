@@ -1,6 +1,7 @@
 const { default: mongoose } = require('mongoose');
 const Recipe = require('../models/recipe');
-const User = require('../models/user')
+const User = require('../models/user');
+const recipe = require('../models/recipe');
 
 const addRecipe = async (req, res) => {
     try {
@@ -53,20 +54,20 @@ const deleteOne = async (req, res) => {
     }
 }
 
-const likeOrUnlike = async (req,res)=>{
+const likeOrUnlike = async (req, res) => {
     const userId = req.user._id
     const { recipeId } = req.params;
 
     try {
         const user = await User.findById(userId);
-        if(user.likedRecipes.includes(recipeId)){
+        if (user.likedRecipes.includes(recipeId)) {
             user.likedRecipes = user.likedRecipes.filter(id => id.toString() !== recipeId);
             await user.save()
-            return res.json({ message: "Recipe unliked",user });
+            return res.json({ message: "Recipe unliked", user });
         }
         user.likedRecipes.push(recipeId);
         await user.save();
-        return res.json({ message: "Recipe liked",user });
+        return res.json({ message: "Recipe liked", user });
     } catch (error) {
         console.error("Error liking recipe:", error);
         return res.status(500).json({ error: "Failed to like recipe" });
@@ -79,18 +80,35 @@ const saveOrUnsave = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
+        const recipe = await Recipe.findById(recipeId)
+
+        if (!recipe) {
+            return res.status(404).json({ error: "Recipe not found" })
+        }
+
+        let updated;
 
         if (user.savedRecipes.includes(recipeId)) {
+            console.log('already is there in saved recipes of the user')
             user.savedRecipes = user.savedRecipes.filter(id => id.toString() !== recipeId);
+            recipe.savesCount = Math.max(0, recipe.savesCount - 1)
+            updated = false
         } else {
+            console.log('not found in already , so adding')
             user.savedRecipes.push(recipeId);
+            recipe.savesCount += 1
+            updated = true
         }
 
         await user.save();
+        await recipe.save()
 
         const updatedUser = await User.findById(userId).populate("savedRecipes");
 
-        return res.json({ message: "Updated", savedRecipes: updatedUser.savedRecipes });
+        console.log('saved', updated)
+        console.log('savesCount', recipe.savesCount)
+
+        return res.json({ message: "Updated", savedRecipes: updatedUser.savedRecipes, saved: updated, savesCount: recipe.savesCount });
 
     } catch (error) {
         console.error("Error saving recipe:", error);
@@ -98,10 +116,9 @@ const saveOrUnsave = async (req, res) => {
     }
 }
 
-
 const addReview = async (req, res) => {
     const { recipeId } = req.params;
-    const { rating,comment,userName,userImage } = req.body;
+    const { rating, comment, userName, userImage } = req.body;
     if (!recipeId || !rating || !comment) {
         return res.status(400).json({ error: "Recipe ID, rating, and comment are required" });
     }
@@ -242,7 +259,7 @@ const getSuggestedRecipes = async (req, res) => {
 
             return {
                 ...recipeObj,
-                userName:name,
+                userName: name,
                 matchPercentage: Math.round(matchPercentage),
             };
         })
@@ -256,6 +273,43 @@ const getSuggestedRecipes = async (req, res) => {
         return res.status(500).json({ error: "Failed to fetch suggested recipes" });
     }
 };
+
+const getPopularRecipes = async (req, res) => {
+    try {
+        console.log('getpopular recipes reached in backend')
+        const recipes = await Recipe.find()
+
+        const popularRecipes = recipes.filter((recipe) => {
+            const totalLikes = recipe.likes;
+            const totalSaves = recipe.savesCount || 0;
+            const totalReviews = recipe.reviews.length;
+
+            const avgRating = totalReviews > 0 ? recipe.reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews : 0
+
+            const isPopular = (
+                totalLikes >= 10 ||
+                totalSaves >= 5 ||
+                (totalReviews >= 3 && avgRating >= 4.5)
+            );
+
+            if (isPopular) {
+                console.log(`🟢 Popular Recipe:
+    ➤ Title: ${recipe.title}
+    ➤ Likes: ${totalLikes}
+    ➤ Saves: ${totalSaves}
+    ➤ Total Reviews: ${totalReviews}
+    ➤ Avg Rating: ${avgRating.toFixed(2)}
+    `);
+            }
+            return isPopular
+        })
+        console.log(`✅ Total Popular Recipes Found: ${popularRecipes.length}`);
+
+        res.status(200).json(popularRecipes)
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching popular recipes" })
+    }
+}
 
 
 module.exports = {
@@ -272,5 +326,6 @@ module.exports = {
     markAsMadeIt,
     getMadeItRecipes,
     getSavedRecipes,
-    getSuggestedRecipes
+    getSuggestedRecipes,
+    getPopularRecipes
 }

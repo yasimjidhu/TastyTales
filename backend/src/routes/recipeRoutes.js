@@ -9,6 +9,7 @@ router.post("/", recipeController.addRecipe);
 router.get("/", recipeController.getAll);
 router.get("/search", recipeController.searchRecipes);
 router.get("/week", recipeController.getRecipesOfTheWeek);
+router.get("/popular",recipeController.getPopularRecipes)
 router.get("/:id", recipeController.getOne);
 
 // ---------- User-Specific Routes (Require Auth) ----------
