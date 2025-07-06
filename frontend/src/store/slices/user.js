@@ -9,28 +9,30 @@ export const getUserProfile = createAsyncThunk(
   'user/getUserProfile',
   async (userId, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token')
       const response = await fetch(`${API_URL}/api/users/${userId}`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
       });
       if (!response.ok) {
-        const errorData = await response.json();  
+        const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to fetch user profile');
       }
       const data = await response.json();
-      return data;    
-    } catch (error) { 
+      return data;
+    } catch (error) {
       return rejectWithValue(error.message || 'Something went wrong');
     }
   }
-);    
+);
 
 
 
 
-export const login = createAsyncThunk (
+export const login = createAsyncThunk(
   'user/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
@@ -52,10 +54,10 @@ export const login = createAsyncThunk (
         return rejectWithValue('No token received from server');
       }
       // Store the token in AsyncStorage
-      await AsyncStorage.setItem('token', data.token); 
-      return data; 
+      await AsyncStorage.setItem('token', data.token);
+      return data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');  
+      return rejectWithValue(error.message || 'Something went wrong');
     }
   }
 )
@@ -78,21 +80,23 @@ export const register = createAsyncThunk(
       }
 
       const data = await response.json();
-      return data; 
+      return data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');  
+      return rejectWithValue(error.message || 'Something went wrong');
     }
   }
 );
 
-export  const updateUserProfileImage = createAsyncThunk(
+export const updateUserProfileImage = createAsyncThunk(
   'user/updateProfileImage',
   async ({ userId, imageUri }, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token')
       const response = await fetch(`${API_URL}/api/users/${userId}/profile-image`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ imageUri }),
       });
@@ -103,9 +107,9 @@ export  const updateUserProfileImage = createAsyncThunk(
       }
 
       const data = await response.json();
-      return data; 
+      return data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');  
+      return rejectWithValue(error.message || 'Something went wrong');
     }
   }
 );
@@ -128,18 +132,18 @@ export const updateUserProfile = createAsyncThunk(
       }
 
       const data = await response.json();
-      return data?.user; 
+      return data?.user;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');  
+      return rejectWithValue(error.message || 'Something went wrong');
     }
   }
 );
 
 export const likeOrUnlikeRecipe = createAsyncThunk(
   'user/likeOrUnlikeRecipe',
-  async ( recipeId , { rejectWithValue }) => {
+  async (recipeId, { rejectWithValue }) => {
 
-    const token = await AsyncStorage.getItem('token'); 
+    const token = await AsyncStorage.getItem('token');
 
     try {
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/like`, {
@@ -165,8 +169,9 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
 
 const initialState = {
   user: null,
-  token:null,
+  token: null,
   loading: false,
+  imageUploading: false, // separate flag for image upload
   error: null,
 };
 
@@ -190,7 +195,7 @@ const userSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token; 
+        state.token = action.payload.token;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -209,17 +214,17 @@ const userSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(updateUserProfileImage.pending, (state) => {
-        state.loading = true;
+        state.imageUploading = true;
         state.error = null;
       })
       .addCase(updateUserProfileImage.fulfilled, (state, action) => {
-        state.loading = false;
+        state.imageUploading = false;
         if (state.user) {
-          state.user.profileImage = action.payload.user.image; // Update profile image in user state
+          state.user.image = action.payload.user.image; // Update profile image in user state
         }
       })
       .addCase(updateUserProfileImage.rejected, (state, action) => {
-        state.loading = false;
+        state.imageUploading = false;
         state.error = action.payload;
       })
       .addCase(getUserProfile.pending, (state) => {
@@ -258,7 +263,7 @@ const userSlice = createSlice({
         if (state.user) {
           state.user.likedRecipes = action.payload.likedRecipes; // Update liked recipes in user state
         }
-      }) 
+      })
       .addCase(likeOrUnlikeRecipe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

@@ -21,6 +21,7 @@ const RecipeSchema = new mongoose.Schema({
   image: String,
   level: { type: String, enum: ["easy", "medium", "hard"] },
   likes: { type: Number, default: 0 },
+  savesCount: { type: Number, default: 0 },
   calories: { type: Number, default: 0 },
   category: { type: String, enum: ["breakfast", "lunch", "dinner", "snack", "dessert"] },
   cookTime: { type: Number, default: 0 },

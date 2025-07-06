@@ -106,7 +106,6 @@ export const Home = ({ navigation }) => {
       <View style={styles.categoriesContainer}>
         <View style={styles.flexRow}>
           <Text style={styles.categoryHeading}>Categories</Text>
-          <Text style={styles.seeAll}>See all</Text>
         </View>
 
         {/* Horizontal ScrollView for Category Boxes */}

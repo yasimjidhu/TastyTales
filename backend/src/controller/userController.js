@@ -1,46 +1,83 @@
-const User = require('../models/user')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+// ------------------ Register ------------------
 
 const register = async (req, res) => {
-
     const { name, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: "Name, email, and password are required" });
+    }
 
     try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(409).json({ error: "Email already exists" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ name, email, password: hashedPassword });
+        
         await user.save();
-        return res.status(201).json({ user, message: "User registered successfully!" });
+
+        res.status(201).json({ user: { _id: user._id, name: user.name, email: user.email }, message: "User registered successfully!" });
     } catch (error) {
-        res.status(400).json({ error: "Email already exists" });
+        console.error("Error during registration:", error);
+        res.status(500).json({ error: "Registration failed" });
     }
-}
+};
+
+// ------------------ Login ------------------
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+    }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email,image:user.image } });
-}
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.json({
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                image: user.image
+            }
+        });
+    } catch (error) {
+        console.error("Error during login:", error);
+        res.status(500).json({ error: "Login failed" });
+    }
+};
+
+// ------------------ Get User Profile ------------------
 
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
-
+    console.log('get user called in backend',userId)
     try {
-        const user = await User.findById(userId).select('-password');
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
+        const user = await User.findById(userId).select("-password").lean();
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        console.log('user in backend',user) 
         res.json(user);
     } catch (error) {
+        console.error("Error fetching user profile:", error);
         res.status(500).json({ error: "Failed to fetch user profile" });
     }
-}
+};
+
+// ------------------ Update Profile Image ------------------
 
 const updateProfileImage = async (req, res) => {
     const { userId } = req.params;
@@ -51,22 +88,25 @@ const updateProfileImage = async (req, res) => {
     }
 
     try {
-        const user = await User.findByIdAndUpdate(userId, { image: imageUri }, { new: true });
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
+        const user = await User.findByIdAndUpdate(userId, { image: imageUri }, { new: true }).select("-password");
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        console.log('updated user with image',user)
         res.json({ message: "Profile image updated successfully", user });
     } catch (error) {
+        console.error("Error updating profile image:", error);
         res.status(500).json({ error: "Failed to update profile image" });
     }
-}
+};
+
+// ------------------ Update Profile ------------------
 
 const updateUserProfile = async (req, res) => {
     const { userId } = req.params;
     const { name, phone } = req.body;
-    // Validate that at least one field is provided
+
     if (!name && !phone) {
-        return res.status(400).json({ error: "At least one field (name or phone) must be provided." });
+        return res.status(400).json({ error: "At least one field (name or phone) is required" });
     }
 
     const updateFields = {};
@@ -74,21 +114,22 @@ const updateUserProfile = async (req, res) => {
     if (phone) updateFields.phone = phone;
 
     try {
-        const user = await User.findByIdAndUpdate(userId, updateFields, { new: true });
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
+        const user = await User.findByIdAndUpdate(userId, updateFields, { new: true }).select("-password");
+        if (!user) return res.status(404).json({ error: "User not found" });
+
         res.json({ message: "Profile updated successfully", user });
     } catch (error) {
+        console.error("Error updating user profile:", error);
         res.status(500).json({ error: "Failed to update profile" });
     }
 };
 
+// ------------------ Exports ------------------
 
 module.exports = {
     register,
     login,
-    updateProfileImage,
     getUserProfile,
+    updateProfileImage,
     updateUserProfile
-}
+};

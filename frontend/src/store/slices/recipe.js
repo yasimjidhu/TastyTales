@@ -50,6 +50,7 @@ export const addReview = createAsyncThunk(
   'recipes/addReview',
   async ({ recipeId, rating, comment, userName, userImage }, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/review`, {
         method: 'POST',
         headers: {
@@ -104,7 +105,7 @@ export const searchRecipes = createAsyncThunk(
         return rejectWithValue(errorData.error || 'Search failed');
       }
       const data = await response.json();
-      return data;  // { recipes, total }
+      return data;
     } catch (error) {
       return rejectWithValue(error.message || 'Something went wrong during search');
     }
@@ -147,14 +148,13 @@ export const fetchMadeItRecipes = createAsyncThunk(
         return rejectWithValue(errorData.error || "Failed to fetch Made It recipes");
       }
       const data = await response.json();
-      return data; // Array of recipe objects
+      return data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch Made It recipes");
     }
   }
 );
 
-// POST (Mark recipe as Made It)
 export const addMadeItRecipe = createAsyncThunk(
   "recipes/addMadeItRecipe",
   async (recipeId, { rejectWithValue }) => {
@@ -175,7 +175,7 @@ export const addMadeItRecipe = createAsyncThunk(
       }
 
       const data = await response.json();
-      return data; // Full recipe object returned
+      return data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to mark recipe as Made It");
     }
@@ -212,12 +212,11 @@ export const fetchSavedRecipes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = await AsyncStorage.getItem("token");
     try {
-      console.log('Fetching saved recipes with token:');
       const response = await fetch(`${API_URL}/api/recipes/saved`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
       });
 
@@ -237,7 +236,6 @@ export const fetchSavedRecipes = createAsyncThunk(
 export const fetchSuggestedRecipes = createAsyncThunk(
   "recipes/fetchSuggestions",
   async (availableIngredients) => {
-    console.log('Fetching suggested recipes with ingredients:', availableIngredients);
     const token = await AsyncStorage.getItem("token");
     const response = await fetch(`${API_URL}/api/recipes/suggest`, {
       method: "POST",
@@ -258,6 +256,30 @@ export const fetchSuggestedRecipes = createAsyncThunk(
   }
 );
 
+export const fetchPopularRecipes = createAsyncThunk(
+  "recipes/fetchPopular",
+  async (_, { rejectWithValue }) => {
+    const token = await AsyncStorage.getItem('token')
+    try {
+      const response = await fetch(`${API_URL}/api/recipes/popular`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to fetch popular recipes");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message || "Failed to fetch popular recipes");
+    }
+  }
+)
+
 
 
 const initialState = {
@@ -268,8 +290,9 @@ const initialState = {
   weekRecipes: [],
   recentlyViewed: [],
   savedRecipes: [],
+  popularRecipes: [],
   madeIt: [],
-  suggestions:[],
+  suggestions: [],
   totalPages: 0,
   currentPage: 1,
 };
@@ -302,7 +325,7 @@ const recipeSlice = createSlice({
     clearRecentlyViewed: (state) => {
       state.recentlyViewed = [];
     },
-    clearSuggestions:(state)=>{
+    clearSuggestions: (state) => {
       state.suggestions = [];
     }
   },
@@ -455,25 +478,49 @@ const recipeSlice = createSlice({
       .addCase(saveOrUnsaveRecipe.fulfilled, (state, action) => {
         state.loading = false;
         state.savedRecipes = action.payload.savedRecipes;
+        
+        const recipeId = action.meta.arg;
+        const { savesCount } = action.payload;
+
+        const recipeIndex = state.recipes.findIndex(r => r._id === recipeId);
+        if (recipeIndex !== -1) {
+          state.recipes[recipeIndex].savesCount = savesCount;
+        }
+
+        const popularIndex = state.popularRecipes.findIndex(r => r._id === recipeId);
+        if (popularIndex !== -1) {
+          state.popularRecipes[popularIndex].savesCount = savesCount;
+        }
       })
       .addCase(saveOrUnsaveRecipe.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(fetchSuggestedRecipes.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchSuggestedRecipes.fulfilled, (state, action) => {
-        state.loading = false;
-        state.suggestions = action.payload;
-      })
-      .addCase(fetchSuggestedRecipes.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+    .addCase(fetchSuggestedRecipes.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(fetchSuggestedRecipes.fulfilled, (state, action) => {
+      state.loading = false;
+      state.suggestions = action.payload;
+    })
+    .addCase(fetchSuggestedRecipes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+    .addCase(fetchPopularRecipes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(fetchPopularRecipes.fulfilled, (state, action) => {
+      state.loading = false;
+      state.popularRecipes = action.payload;
+    })
+    .addCase(fetchPopularRecipes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    });
 
-  },
+},
 });
 
 export const {
