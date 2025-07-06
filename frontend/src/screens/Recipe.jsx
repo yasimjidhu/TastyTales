@@ -21,7 +21,7 @@ import {
   fetchRecipe,
   saveOrUnsaveRecipe,
 } from "../store/slices/recipe";
-import { likeOrUnlikeRecipe } from "../store/slices/user";
+import { followOrUnfollow, likeOrUnlikeRecipe } from "../store/slices/user";
 import { renderStars } from "../components/RenderStars";
 import CustomAlert from "../components/Alert";
 
@@ -141,7 +141,7 @@ export default function Recipe({ navigation }) {
   const isLikedByUser = user?.likedRecipes?.includes(recipeId);
   const isSaved = savedRecipes?.some((r) => r._id === recipeId);
   const isPopular = popularRecipes?.some((r) => r._id === recipeId);
-
+  const isFollowing = user?.following?.some((id)=> id === recipe?.user)   
   return (
     <View style={styles.container}>
       {/* Enhanced Image Section with Overlay */}
@@ -218,10 +218,10 @@ export default function Recipe({ navigation }) {
                   </View>
                 </View>
 
-                <TouchableOpacity style={styles.followEnhanced}>
-                  <Ionicons name="person-add" size={16} color="#fff" />
-                  <Text style={styles.followTextEnhanced}>Follow</Text>
-                </TouchableOpacity>
+                <TouchableOpacity style={[styles.followEnhanced,isFollowing && {backgroundColor:'#BDC3C7'}]} onPress={()=>dispatch(followOrUnfollow(recipe?.user))}>
+                  <Ionicons name={isFollowing ? "checkmark" : "person-add"} size={16} color="#fff" />
+                  <Text style={styles.followTextEnhanced}>{isFollowing ? "Following" : "Follow"}</Text>
+                </TouchableOpacity> 
               </View>
             </View>
             <View style={styles.ratingContainer}>

@@ -15,4 +15,6 @@ router.get("/:userId", userController.getUserProfile);
 router.put("/:userId", userController.updateUserProfile);
 router.post("/:userId/profile-image", userController.updateProfileImage);
 
+router.post('/follow/:authorId',userController.followOrUnfollow)
+
 module.exports = router;

@@ -64,7 +64,7 @@ const getOne = async (req, res) => {
             return res.status(400).json({ error: "Recipe ID is required" });
         }
         const recipe = await Recipe.findById(req.params.id)
-        if (!recipe) return res.status(404).json({ error: "Recipe not found" });s
+        if (!recipe) return res.status(404).json({ error: "Recipe not found" });
         res.json(recipe);
     } catch (error) {
         res.status(400).json({ error: "Invalid ID" });
