@@ -14,7 +14,7 @@ const RecipeSchema = new mongoose.Schema({
   ingredients: [
     {
       quantity: String,
-      name: String  
+      name: String
     }
   ],
   instructions: String,
@@ -27,6 +27,8 @@ const RecipeSchema = new mongoose.Schema({
   cookTime: { type: Number, default: 0 },
   servings: { type: Number, default: 1 },
   isVegetarian: { type: Boolean, default: false },
+  authorName: { type: String, required: false },
+  authorImage: { type: String, default: "" },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   reviews: [reviewSchema],
 }, { timestamps: true });

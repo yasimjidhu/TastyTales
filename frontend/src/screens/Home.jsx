@@ -190,7 +190,7 @@ export const Home = ({ navigation }) => {
                   {recipe.title || "Untitled"}
                 </Text>
                 <Text style={styles.ownerText}>
-                  {recipe.author || "By Unknown"}
+                  {recipe.authorName || "By Unknown"}
                 </Text>
               </View>
             </TouchableOpacity>

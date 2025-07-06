@@ -69,7 +69,6 @@ const getUserProfile = async (req, res) => {
         const user = await User.findById(userId).select("-password").lean();
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        console.log('user in backend',user) 
         res.json(user);
     } catch (error) {
         console.error("Error fetching user profile:", error);

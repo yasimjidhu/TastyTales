@@ -1,13 +1,48 @@
 const { default: mongoose } = require('mongoose');
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
-const recipe = require('../models/recipe');
 
 const addRecipe = async (req, res) => {
     try {
-        const recipe = new Recipe(req.body);
-        await recipe.save();
-        res.status(201).json(recipe);
+        const { _id, name, image } = req.user;
+
+        const {
+            title,
+            description,
+            ingredients,
+            instructions,
+            image: recipeImage,
+            level,
+            category,
+            calories = 0,
+            cookTime = 0,
+            servings = 1,
+            isVegetarian = false,
+        } = req.body;
+
+        if (!title || !description || !ingredients?.length || !instructions) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        const newRecipe = new Recipe({
+            title,
+            description,
+            ingredients,
+            instructions,
+            image: recipeImage,
+            level,
+            category,
+            calories,
+            cookTime,
+            servings,
+            isVegetarian,
+            authorName: name,
+            authorImage: image,
+            user: _id,
+        });
+
+        await newRecipe.save();
+        res.status(201).json({ message: "Recipe created successfully", recipe: newRecipe });
     } catch (error) {
         res.status(400).json({ error: "Failed to create recipe" });
     }
@@ -29,7 +64,7 @@ const getOne = async (req, res) => {
             return res.status(400).json({ error: "Recipe ID is required" });
         }
         const recipe = await Recipe.findById(req.params.id)
-        if (!recipe) return res.status(404).json({ error: "Recipe not found" });
+        if (!recipe) return res.status(404).json({ error: "Recipe not found" });s
         res.json(recipe);
     } catch (error) {
         res.status(400).json({ error: "Invalid ID" });
@@ -226,7 +261,6 @@ const getSavedRecipes = async (req, res) => {
         if (!savedRecipes || savedRecipes.length === 0) {
             return res.json([]);
         }
-
         res.json(savedRecipes);
     } catch (error) {
         console.error("Error fetching saved recipes:", error);
@@ -263,7 +297,7 @@ const getSuggestedRecipes = async (req, res) => {
                 matchPercentage: Math.round(matchPercentage),
             };
         })
-            .filter(recipe => recipe.matchPercentage > 0) // Only return recipes with matches
+            .filter(recipe => recipe.matchPercentage > 0)
             .sort((a, b) => b.matchPercentage - a.matchPercentage);
 
         res.json(suggestions);
@@ -276,7 +310,6 @@ const getSuggestedRecipes = async (req, res) => {
 
 const getPopularRecipes = async (req, res) => {
     try {
-        console.log('getpopular recipes reached in backend')
         const recipes = await Recipe.find()
 
         const popularRecipes = recipes.filter((recipe) => {
@@ -292,18 +325,8 @@ const getPopularRecipes = async (req, res) => {
                 (totalReviews >= 3 && avgRating >= 4.5)
             );
 
-            if (isPopular) {
-                console.log(`🟢 Popular Recipe:
-    ➤ Title: ${recipe.title}
-    ➤ Likes: ${totalLikes}
-    ➤ Saves: ${totalSaves}
-    ➤ Total Reviews: ${totalReviews}
-    ➤ Avg Rating: ${avgRating.toFixed(2)}
-    `);
-            }
             return isPopular
         })
-        console.log(`✅ Total Popular Recipes Found: ${popularRecipes.length}`);
 
         res.status(200).json(popularRecipes)
     } catch (error) {
