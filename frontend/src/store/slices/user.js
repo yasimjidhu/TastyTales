@@ -146,6 +146,7 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
     const token = await AsyncStorage.getItem('token');
 
     try {
+      console.log('like or unlike alled in slice',recipeId)
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/like`, {
         method: 'POST',
         headers: {

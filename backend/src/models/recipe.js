@@ -29,6 +29,7 @@ const RecipeSchema = new mongoose.Schema({
   isVegetarian: { type: Boolean, default: false },
   authorName: { type: String, required: false },
   authorImage: { type: String, default: "" },
+  authorId:{type:mongoose.Schema.Types.ObjectId},
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   reviews: [reviewSchema],
 }, { timestamps: true });

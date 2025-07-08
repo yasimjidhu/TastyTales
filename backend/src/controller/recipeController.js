@@ -1,6 +1,7 @@
-const { default: mongoose } = require('mongoose');
+const { default: mongoose } = require("mongoose");
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
+const Notification = require('../models/notificationSchema')
 
 const addRecipe = async (req, res) => {
     try {
@@ -95,13 +96,34 @@ const likeOrUnlike = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
+        const recipe = await Recipe.findById(recipeId)
+
+        if(!recipe) return res.status(404).json({message:"Recipe not found"})
+        
         if (user.likedRecipes.includes(recipeId)) {
             user.likedRecipes = user.likedRecipes.filter(id => id.toString() !== recipeId);
             await user.save()
             return res.json({ message: "Recipe unliked", user });
         }
+
         user.likedRecipes.push(recipeId);
         await user.save();
+        
+        console.log('recipe authorid',recipe?.authorId)
+        console.log('userId ',userId)
+
+        if(!recipe.authorId.equals(userId)){
+            console.log('creating notifications')
+            await Notification.create({
+                recipient:recipe.authorId,
+                sender:userId,
+                type:"like",
+                message:`${req.user.name} liked your recipe`,
+                relatedResource:recipeId,
+                resourceType:"recipes"
+            })
+        }
+        console.log('notification created')
         return res.json({ message: "Recipe liked", user });
     } catch (error) {
         console.error("Error liking recipe:", error);
@@ -154,6 +176,7 @@ const saveOrUnsave = async (req, res) => {
 const addReview = async (req, res) => {
     const { recipeId } = req.params;
     const { rating, comment, userName, userImage } = req.body;
+
     if (!recipeId || !rating || !comment) {
         return res.status(400).json({ error: "Recipe ID, rating, and comment are required" });
     }
@@ -169,6 +192,17 @@ const addReview = async (req, res) => {
             userImage: userImage || req.user.image
         });
         await recipe.save();
+
+        if(!recipe.authorId.equals(req.user.id)){
+            await Notification.create({
+                recipient:recipe.authorId,
+                sender:req.user.id,
+                type:"comment",
+                message:`${req.user.name} commented on your recipe`,
+                relatedResource:recipeId,
+                resourceType:"recipes"
+            })
+        }
         res.json(recipe);
     } catch (error) {
         console.error("Error adding review:", error);
