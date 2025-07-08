@@ -21,7 +21,7 @@ import {
   fetchRecipe,
   saveOrUnsaveRecipe,
 } from "../store/slices/recipe";
-import { likeOrUnlikeRecipe } from "../store/slices/user";
+import { followOrUnfollow, getUserProfile, likeOrUnlikeRecipe } from "../store/slices/user";
 import { renderStars } from "../components/RenderStars";
 import CustomAlert from "../components/Alert";
 
@@ -51,6 +51,7 @@ export default function Recipe({ navigation }) {
 
   useEffect(() => {
     if (recipeId) {
+      dispatch(getUserProfile(user?._id))
       dispatch(fetchRecipe(recipeId));
       dispatch(fetchPopularRecipes());
     }
@@ -140,8 +141,8 @@ export default function Recipe({ navigation }) {
 
   const isLikedByUser = user?.likedRecipes?.includes(recipeId);
   const isSaved = savedRecipes?.some((r) => r._id === recipeId);
-  const isPopular = popularRecipes?.some((r) => r._id === recipeId)
-  console.log('isPopular',isPopular)
+  const isPopular = popularRecipes?.some((r) => r._id === recipeId);
+  const isFollowing = user?.following?.some((id)=> id === recipe?.authorId)   
 
   return (
     <View style={styles.container}>
@@ -195,7 +196,35 @@ export default function Recipe({ navigation }) {
               <Text style={styles.recipeTitle}>
                 {recipe?.title || "Delicious Recipe"}
               </Text>
-              {/* <Text style={styles.recipeCategory}>Main Course • Dinner</Text> */}
+
+              <View style={styles.authorContainer}>
+                <View style={styles.authorInfo}>
+                  {recipe?.authorImage ? (
+                    <Image
+                      source={{ uri: recipe.authorImage }}
+                      style={styles.authorAvatar}
+                    />
+                  ) : (
+                    <View style={styles.authorPlaceholder}>
+                      <Text style={styles.authorInitial}>
+                        {recipe?.authorName?.charAt(0)?.toUpperCase() || "U"}
+                      </Text>
+                    </View>
+                  )}
+
+                  <View>
+                    <Text style={styles.authorLabel}>Recipe by</Text>
+                    <Text style={styles.authorName}>
+                      {recipe?.authorName || "Unknown Chef"}
+                    </Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity style={[styles.followEnhanced,isFollowing && {backgroundColor:'#BDC3C7'}]} onPress={()=>dispatch(followOrUnfollow(recipe?.authorId))}>
+                  <Ionicons name={isFollowing ? "checkmark" : "person-add"} size={16} color="#fff" />
+                  <Text style={styles.followTextEnhanced}>{isFollowing ? "Following" : "Follow"}</Text>
+                </TouchableOpacity> 
+              </View>
             </View>
             <View style={styles.ratingContainer}>
               <View style={styles.rating}>
@@ -572,10 +601,9 @@ const styles = StyleSheet.create({
   },
   recipeTitle: {
     fontSize: 28,
-    fontWeight: "bold",
     color: "#2C3E50",
     marginBottom: 4,
-    fontFamily: "Primary-ExtraBold",
+    fontFamily: "Primary-Bold",
   },
   recipeCategory: {
     fontSize: 14,
@@ -922,4 +950,82 @@ const styles = StyleSheet.create({
     color: "#BDC3C7",
     marginTop: 4,
   },
+  authorContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+  marginTop: 12,
+  marginBottom: 20,
+},
+
+authorInfo: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+authorAvatar: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  marginRight: 12,
+  borderWidth: 0,
+  borderColor: "#4ECDC4",
+},
+
+authorPlaceholder: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: "#4ECDC4",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12,
+},
+
+authorInitial: {
+  color: "white",
+  fontSize: 18,
+  fontWeight: "bold",
+},
+
+authorLabel: {
+  fontSize: 12,
+  color: "#7F8C8D",
+},
+
+authorName: {
+  fontSize: 18,
+  fontWeight: "600",
+  color: "#2C3E50",
+  fontFamily:"Primary-Bold"
+},
+
+followEnhanced: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#4ECDC4",
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  borderRadius: 20,
+  shadowColor: "#4ECDC4",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 4,
+},
+
+followTextEnhanced: {
+  color: "#fff",
+  fontWeight: "600",
+  marginLeft: 6,
+  fontSize: 14,
+},
 });

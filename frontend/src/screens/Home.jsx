@@ -21,6 +21,7 @@ import {
   fetchWeekRecipes,
 } from "../store/slices/recipe";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { fetchNotifications } from "../store/slices/notification";
 
 export const Home = ({ navigation }) => {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
@@ -46,6 +47,7 @@ export const Home = ({ navigation }) => {
     const loadData = async () => {
       await dispatch(fetchRecipes());
       await dispatch(fetchWeekRecipes());
+      await dispatch(fetchNotifications())
       dispatch(clearSearchResults());
     };
 
@@ -190,7 +192,7 @@ export const Home = ({ navigation }) => {
                   {recipe.title || "Untitled"}
                 </Text>
                 <Text style={styles.ownerText}>
-                  {recipe.author || "By Unknown"}
+                  {recipe.authorName || "By Unknown"}
                 </Text>
               </View>
             </TouchableOpacity>

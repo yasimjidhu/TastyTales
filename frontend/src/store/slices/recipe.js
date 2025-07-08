@@ -28,15 +28,42 @@ export const fetchRecipe = createAsyncThunk(
   'recipes/fetchRecipe',
   async (id, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/recipes/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
       if (!response.ok) {
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to fetch recipe');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Something went wrong');
+    }
+  }
+);
+
+export const addRecipe = createAsyncThunk(
+  'recipes/addRecipe',
+  async (recipeData, { rejectWithValue }) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/recipes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(recipeData)
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to add recipe');
       }
       const data = await response.json();
       return data;
@@ -55,7 +82,7 @@ export const addReview = createAsyncThunk(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ rating, comment, userName, userImage }),
       });
@@ -76,10 +103,12 @@ export const fetchCategoryWiseRecipes = createAsyncThunk(
   async ({ category, page = 1 }, { rejectWithValue }) => {
 
     try {
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/category/${category}?page=${page}&limit=${10}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       });
       if (!response.ok) {
@@ -212,6 +241,7 @@ export const fetchSavedRecipes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = await AsyncStorage.getItem("token");
     try {
+      console.log('fetch saved recipes called')
       const response = await fetch(`${API_URL}/api/recipes/saved`, {
         method: "GET",
         headers: {
@@ -303,9 +333,6 @@ const recipeSlice = createSlice({
   reducers: {
     setRecipes: (state, action) => {
       state.recipes = action.payload;
-    },
-    addRecipe: (state, action) => {
-      state.recipes.push(action.payload);
     },
     removeRecipe: (state, action) => {
       state.recipes = state.recipes.filter(recipe => recipe._id !== action.payload);
@@ -478,7 +505,7 @@ const recipeSlice = createSlice({
       .addCase(saveOrUnsaveRecipe.fulfilled, (state, action) => {
         state.loading = false;
         state.savedRecipes = action.payload.savedRecipes;
-        
+
         const recipeId = action.meta.arg;
         const { savesCount } = action.payload;
 
@@ -496,36 +523,35 @@ const recipeSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-    .addCase(fetchSuggestedRecipes.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(fetchSuggestedRecipes.fulfilled, (state, action) => {
-      state.loading = false;
-      state.suggestions = action.payload;
-    })
-    .addCase(fetchSuggestedRecipes.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
-    .addCase(fetchPopularRecipes.pending, (state) => {
-      state.loading = true;
-    })
-    .addCase(fetchPopularRecipes.fulfilled, (state, action) => {
-      state.loading = false;
-      state.popularRecipes = action.payload;
-    })
-    .addCase(fetchPopularRecipes.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    });
+      .addCase(fetchSuggestedRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSuggestedRecipes.fulfilled, (state, action) => {
+        state.loading = false;
+        state.suggestions = action.payload;
+      })
+      .addCase(fetchSuggestedRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchPopularRecipes.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchPopularRecipes.fulfilled, (state, action) => {
+        state.loading = false;
+        state.popularRecipes = action.payload;
+      })
+      .addCase(fetchPopularRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
 
-},
+  },
 });
 
 export const {
   setRecipes,
-  addRecipe,
   removeRecipe,
   clearSearchResults,
   addRecentlyViewed,

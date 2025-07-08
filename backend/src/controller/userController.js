@@ -1,6 +1,8 @@
 const User = require("../models/user");
+const Notification = require('../models/notificationSchema')
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { default: mongoose } = require("mongoose");
 
 // ------------------ Register ------------------
 
@@ -17,7 +19,7 @@ const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ name, email, password: hashedPassword });
-        
+
         await user.save();
 
         res.status(201).json({ user: { _id: user._id, name: user.name, email: user.email }, message: "User registered successfully!" });
@@ -64,12 +66,11 @@ const login = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
-    console.log('get user called in backend',userId)
+    console.log('get user called in backend', userId)
     try {
         const user = await User.findById(userId).select("-password").lean();
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        console.log('user in backend',user) 
         res.json(user);
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -91,7 +92,7 @@ const updateProfileImage = async (req, res) => {
         const user = await User.findByIdAndUpdate(userId, { image: imageUri }, { new: true }).select("-password");
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        console.log('updated user with image',user)
+        console.log('updated user with image', user)
         res.json({ message: "Profile image updated successfully", user });
     } catch (error) {
         console.error("Error updating profile image:", error);
@@ -124,6 +125,69 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+const followOrUnfollow = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { authorId } = req.params;
+
+        if (new mongoose.Types.ObjectId(userId).equals(new mongoose.Types.ObjectId(authorId))) {
+            return res.status(400).json({ message: "You cannot follow yourself" });
+        }
+
+        const user = await User.findById(userId);
+        const author = await User.findById(authorId);
+
+        if (!user || !author) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isFollowing = user.following.some(id =>
+            id.equals(new mongoose.Types.ObjectId(authorId))
+        );
+
+        if (isFollowing) {
+            user.following.pull(authorId);
+            author.followers.pull(userId);
+        } else {
+            user.following.push(authorId);
+            author.followers.push(userId);
+
+            // Send notification only on follow
+            await Notification.create({
+                recipient: authorId,
+                sender: userId,
+                type: "follow",
+                message: `${user.name} started following you`,
+            });
+        }
+
+        await user.save();
+        await author.save();
+
+        const updatedUser = await User.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(userId) } },
+            {
+                $project: {
+                    name: 1,
+                    email: 1,
+                    image: 1,
+                    followersCount: { $size: "$followers" },
+                    followingCount: { $size: "$following" },
+                    followers: 1,
+                    following: 1,
+                },
+            },
+        ]);
+
+        res.json(updatedUser[0]);
+    } catch (error) {
+        console.error("Follow Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
 // ------------------ Exports ------------------
 
 module.exports = {
@@ -131,5 +195,6 @@ module.exports = {
     login,
     getUserProfile,
     updateProfileImage,
-    updateUserProfile
+    updateUserProfile,
+    followOrUnfollow
 };

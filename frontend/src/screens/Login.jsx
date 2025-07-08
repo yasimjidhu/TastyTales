@@ -20,7 +20,7 @@ export default function Login({ navigation }) {
         }
         const resultAction = await dispatch(login({ email, password }))
         if(login.fulfilled.match(resultAction)) {
-            console.log('Login successful:', resultAction.payload);
+            console.log('Login successful:');
         }else{
             alert(resultAction.payload || 'Login failed, please try again')
         }

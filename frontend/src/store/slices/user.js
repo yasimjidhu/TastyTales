@@ -146,6 +146,7 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
     const token = await AsyncStorage.getItem('token');
 
     try {
+      console.log('like or unlike alled in slice',recipeId)
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/like`, {
         method: 'POST',
         headers: {
@@ -160,6 +161,31 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
       }
       const data = await response.json();
       return data?.user;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Something went wrong');
+    }
+  }
+);
+
+export const followOrUnfollow = createAsyncThunk(
+  'user/followOrUnfollow',
+  async (authorId, { rejectWithValue }) => {
+    const token = await AsyncStorage.getItem('token');
+    try {
+      const response = await fetch(`${API_URL}/api/users/follow/${authorId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to follow author');
+      }
+      const data = await response.json();
+      return data;
     } catch (error) {
       return rejectWithValue(error.message || 'Something went wrong');
     }
@@ -265,6 +291,17 @@ const userSlice = createSlice({
         }
       })
       .addCase(likeOrUnlikeRecipe.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(followOrUnfollow.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(followOrUnfollow.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(followOrUnfollow.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
