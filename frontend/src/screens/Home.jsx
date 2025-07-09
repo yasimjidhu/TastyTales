@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import SearchBar from "../components/SearchBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -21,7 +22,11 @@ import {
   fetchWeekRecipes,
 } from "../store/slices/recipe";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { fetchNotifications } from "../store/slices/notification";
+import {
+  fetchNotifications,
+  updateExpoToken,
+} from "../store/slices/notification";
+import { registerForPushNotificationsAsync } from "../notifications/registerPushToken";
 
 export const Home = ({ navigation }) => {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
@@ -47,7 +52,7 @@ export const Home = ({ navigation }) => {
     const loadData = async () => {
       await dispatch(fetchRecipes());
       await dispatch(fetchWeekRecipes());
-      await dispatch(fetchNotifications())
+      await dispatch(fetchNotifications());
       dispatch(clearSearchResults());
     };
 

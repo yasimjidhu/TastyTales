@@ -24,6 +24,29 @@ export const fetchNotifications = createAsyncThunk(
   }
 );
 
+export const updateExpoToken = createAsyncThunk(
+  "notifications/updateExpoToken",
+  async (expoToken, { rejectWithValue }) => {
+    try {
+      console.log('update expo token called',expoToken)
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/api/users/update-expo-token`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ expoToken }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update expo token");
+      return await res.json();
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const markAllNotificationsRead = createAsyncThunk(
   "notifications/markAllRead",
   async (_, { rejectWithValue }) => {

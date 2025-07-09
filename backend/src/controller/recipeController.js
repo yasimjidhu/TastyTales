@@ -1,7 +1,8 @@
 const { default: mongoose } = require("mongoose");
 const Recipe = require('../models/recipe');
 const User = require('../models/user');
-const Notification = require('../models/notificationSchema')
+const Notification = require('../models/notificationSchema');
+const { sendPushNotifications } = require("../utils/sendPushNotifications");
 
 const addRecipe = async (req, res) => {
     try {
@@ -109,11 +110,8 @@ const likeOrUnlike = async (req, res) => {
         user.likedRecipes.push(recipeId);
         await user.save();
         
-        console.log('recipe authorid',recipe?.authorId)
-        console.log('userId ',userId)
+        if( recipe.authorId && !recipe.authorId?.equals(userId)){
 
-        if(!recipe.authorId.equals(userId)){
-            console.log('creating notifications')
             await Notification.create({
                 recipient:recipe.authorId,
                 sender:userId,
@@ -122,8 +120,16 @@ const likeOrUnlike = async (req, res) => {
                 relatedResource:recipeId,
                 resourceType:"recipes"
             })
+
+            const author = await User.findById(recipe.authorId)
+            if(author?.expoToken){
+                await sendPushNotifications(
+                    author.expoToken,
+                    "Your recipe was liked ❤️",
+                    `${req.user.name} liked your recipe "${recipe.title}"`
+                )
+            }
         }
-        console.log('notification created')
         return res.json({ message: "Recipe liked", user });
     } catch (error) {
         console.error("Error liking recipe:", error);
@@ -182,6 +188,8 @@ const addReview = async (req, res) => {
     }
     try {
         const recipe = await Recipe.findById(recipeId);
+        const author = await User.findById(recipe.authorId)
+
         if (!recipe) return res.status(404).json({ error: "Recipe not found" });
 
         recipe.reviews.push({
@@ -193,7 +201,7 @@ const addReview = async (req, res) => {
         });
         await recipe.save();
 
-        if(!recipe.authorId.equals(req.user.id)){
+        if( recipe.authorId && !recipe.authorId.equals(req.user.id)){
             await Notification.create({
                 recipient:recipe.authorId,
                 sender:req.user.id,
@@ -202,6 +210,15 @@ const addReview = async (req, res) => {
                 relatedResource:recipeId,
                 resourceType:"recipes"
             })
+
+            if(author?.expoToken){
+                await sendPushNotifications(
+                    author.expoToken,
+                    "New Comment 💬",
+                    `${req.user.name} commented on your recipe "${recipe.title}"`
+                )
+            }
+
         }
         res.json(recipe);
     } catch (error) {

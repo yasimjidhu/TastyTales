@@ -4,6 +4,7 @@ const UserSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
+  expoToken:String,
   image: { type: String, default: "" },
   phone: { type: String, default: "" },
   likedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'recipes' }],

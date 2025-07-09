@@ -11,10 +11,13 @@ router.post("/login", userController.login);
 // ---------- Protected Routes ----------
 router.use(authMiddleware);
 
+// Static routes first
+router.put('/update-expo-token', userController.updateExpoToken);
+router.post('/follow/:authorId', userController.followOrUnfollow);
+
+// 🔻 Dynamic routes AFTER static ones
 router.get("/:userId", userController.getUserProfile);
 router.put("/:userId", userController.updateUserProfile);
 router.post("/:userId/profile-image", userController.updateProfileImage);
-
-router.post('/follow/:authorId',userController.followOrUnfollow)
 
 module.exports = router;

@@ -196,8 +196,9 @@ export const followOrUnfollow = createAsyncThunk(
 const initialState = {
   user: null,
   token: null,
+  expoToken:null,
   loading: false,
-  imageUploading: false, // separate flag for image upload
+  imageUploading: false, 
   error: null,
 };
 
