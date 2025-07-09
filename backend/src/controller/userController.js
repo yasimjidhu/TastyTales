@@ -3,6 +3,7 @@ const Notification = require('../models/notificationSchema')
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
+const { sendPushNotifications } = require("../utils/sendPushNotifications");
 
 // ------------------ Register ------------------
 
@@ -159,6 +160,15 @@ const followOrUnfollow = async (req, res) => {
                 type: "follow",
                 message: `${user.name} started following you`,
             });
+
+            // Send push Notifications
+            if(author.expoToken){
+                await sendPushNotifications(
+                    author.expoToken,
+                    "New Follower",
+                    `${user.name} started following you`
+                )
+            }
         }
 
         await user.save();
@@ -186,7 +196,17 @@ const followOrUnfollow = async (req, res) => {
     }
 };
 
+const updateExpoToken = async (req,res)=>{
+    const userId = req.user._id
+    const {expoToken} = req.body
 
+    console.log('expo token in backend',expoToken)
+    if(!expoToken) return res.status(400).json({message:"expoToken is required"})
+    
+    await User.findByIdAndUpdate(userId,{expoToken},{new:true})
+    console.log('expo token updated')
+    res.status(200).json({message:"Expo push token updated successfully"})
+}
 
 // ------------------ Exports ------------------
 
@@ -196,5 +216,6 @@ module.exports = {
     getUserProfile,
     updateProfileImage,
     updateUserProfile,
-    followOrUnfollow
+    followOrUnfollow,
+    updateExpoToken
 };

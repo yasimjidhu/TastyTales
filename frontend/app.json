@@ -9,7 +9,10 @@
     "newArchEnabled": true,
     "extra": {
       "EXPO_PUBLIC_API_URL": "http://192.168.74.28:5000",
-      "EXPO_PUBLIC_CLOUDINARY_URL": "https://api.cloudinary.com/v1_1/dhla5xcqb/image/upload"
+      "EXPO_PUBLIC_CLOUDINARY_URL": "https://api.cloudinary.com/v1_1/dhla5xcqb/image/upload",
+      "eas": {
+        "projectId": "f669cef6-f1a7-477e-9fa9-660881d327df"
+      }
     },
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -32,6 +35,7 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "owner": "yasimdirshad"
   }
 }

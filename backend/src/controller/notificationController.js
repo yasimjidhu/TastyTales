@@ -1,41 +1,42 @@
 const Notification = require('../models/notificationSchema')
+const User = require('../models/user')
 const { default: mongoose } = require("mongoose");
 
 const getNotifications = async (req, res) => {
-    try {
-        const notifications = await Notification.aggregate([
-            { $match: { recipient: new mongoose.Types.ObjectId(req.user?.id) } },
-            { $sort: { createdAt: -1 } },
-            { $limit: 50 },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "sender",
-                    foreignField: "_id",
-                    as: "senderDetails"
-                }
-            },
-            { $unwind: { path: "$senderDetails", preserveNullAndEmptyArrays: true } },
-            {
-                $project: {
-                    _id: 1,
-                    recipient: 1,
-                    sender: 1,
-                    type: 1,
-                    message: 1,
-                    read: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    senderName: "$senderDetails.name",
-                    senderImage: "$senderDetails.image"
-                }
-            }
-        ]);
-        res.status(200).json(notifications);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to fetch notifications" });
-    }
+  try {
+    const notifications = await Notification.aggregate([
+      { $match: { recipient: new mongoose.Types.ObjectId(req.user?.id) } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 50 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "sender",
+          foreignField: "_id",
+          as: "senderDetails"
+        }
+      },
+      { $unwind: { path: "$senderDetails", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          recipient: 1,
+          sender: 1,
+          type: 1,
+          message: 1,
+          read: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          senderName: "$senderDetails.name",
+          senderImage: "$senderDetails.image"
+        }
+      }
+    ]);
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch notifications" });
+  }
 }
 
 const markAllAsRead = async (req, res) => {
@@ -63,7 +64,7 @@ const deleteNotification = async (req, res) => {
 };
 
 module.exports = {
-    getNotifications,
-    markAllAsRead,
-    deleteNotification
+  getNotifications,
+  markAllAsRead,
+  deleteNotification,
 }
