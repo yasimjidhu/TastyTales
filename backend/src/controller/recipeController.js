@@ -279,46 +279,63 @@ const markAsMadeIt = async (req, res) => {
 const getMadeItRecipes = async (req, res) => {
     const userId = req.user._id;
     try {
-        const user = await User.findById(userId).populate('madeItRecipes');
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        const madeItRecipes = user.madeItRecipes;
-        if (!madeItRecipes || madeItRecipes.length === 0) {
+        const result = await User.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(userId) } },
+            {
+                $lookup: {
+                    from: 'recipes',
+                    localField: 'madeItRecipes',
+                    foreignField: '_id',
+                    as: 'madeItRecipesData'
+                }
+            },
+            {
+                $project: {
+                    madeItRecipes: '$madeItRecipesData'
+                }
+            }
+        ]);
+
+        if (!result.length || result[0].madeItRecipes.length === 0) {
             return res.status(404).json({ error: "No recipes marked as made" });
         }
-        res.json(madeItRecipes);
+       res.json(result[0].madeItRecipes);
     } catch (error) {
         res.status(500).json({ error: "Failed to retrieve made recipes" });
     }
-}
+};
+
 
 const getSavedRecipes = async (req, res) => {
     const userId = req.user._id;
 
     try {
+        const result = await User.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(userId) } },
+            {
+                $lookup: {
+                    from: 'recipes',
+                    localField: 'savedRecipes',
+                    foreignField: '_id',
+                    as: 'savedRecipesData'
+                }
+            },
+            {
+                $project: {
+                    savedRecipes: '$savedRecipesData'
+                }
+            }
+        ]);
 
-        const user = await User.findById(userId).populate({
-            path: "savedRecipes",
-            model: "recipes",
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
+        if (!result.length || result[0].savedRecipes.length === 0) {
+            return res.status(404).json({ error: "No saved recipes" });
         }
-
-        const savedRecipes = user.savedRecipes;
-
-        if (!savedRecipes || savedRecipes.length === 0) {
-            return res.json([]);
-        }
-        res.json(savedRecipes);
+        res.json(result[0].savedRecipes);
     } catch (error) {
         console.error("Error fetching saved recipes:", error);
         res.status(500).json({ error: "Failed to retrieve saved recipes" });
     }
 };
-
 
 const getSuggestedRecipes = async (req, res) => {
     const { availableIngredients } = req.body;
@@ -385,6 +402,38 @@ const getPopularRecipes = async (req, res) => {
     }
 }
 
+const getLikedRecipes = async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        const result = await User.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(userId) } },
+            {
+                $lookup: {
+                    from: 'recipes',
+                    localField: 'likedRecipes',
+                    foreignField: '_id',
+                    as: 'likedRecipesData'
+                }
+            },
+            {
+                $project: {
+                    likedRecipes: '$likedRecipesData'
+                }
+            }
+        ]);
+
+        if (!result.length || result[0].likedRecipes.length === 0) {
+            return res.status(404).json({ error: "No liked recipes" });
+        }
+        res.json(result[0].likedRecipes);
+    } catch (error) {
+        console.error("Error fetching liked recipes:", error);
+        res.status(500).json({ error: "Failed to retrieve liked recipes" });
+    }
+};
+
+
 
 module.exports = {
     addRecipe,
@@ -401,5 +450,6 @@ module.exports = {
     getMadeItRecipes,
     getSavedRecipes,
     getSuggestedRecipes,
-    getPopularRecipes
+    getPopularRecipes,
+    getLikedRecipes
 }

@@ -117,13 +117,12 @@ export default function BookMark({ navigation }) {
           {savedRecipes && savedRecipes.length > 3 && (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("ViewAll1", {
+                navigation.navigate("ViewAll", {
                   recipesIds: savedRecipes.map((recipe) => recipe._id),
                 })
               }
               style={styles.seeAllButton}
             >
-              <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           )}
         </View>
