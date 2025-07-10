@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Image } from 'expo-image';
 import {
   StyleSheet,
   Text,
   TextInput,
   View,
   ScrollView,
-  Image,
   TouchableOpacity,
   Button,
 } from "react-native";
@@ -27,15 +27,17 @@ import {
   updateExpoToken,
 } from "../store/slices/notification";
 import { registerForPushNotificationsAsync } from "../notifications/registerPushToken";
+import { useFocusEffect } from "@react-navigation/native";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export const Home = ({ navigation }) => {
+  const [refreshing, setRefreshing] = useState(false);
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
   const dispatch = useDispatch();
 
   const { user, loading, error } = useSelector((state) => state.user);
-  const { recipes, searchResults, weekRecipes } = useSelector(
-    (state) => state.recipes
-  );
+  const { recipes, searchResults, weekRecipes, lastFetched, weekLastFetched } =
+    useSelector((state) => state.recipes);
 
   const handleCategoryPress = (category) => {
     navigation.navigate("Category", { category });
@@ -48,16 +50,32 @@ export const Home = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      await dispatch(fetchRecipes());
-      await dispatch(fetchWeekRecipes());
-      await dispatch(fetchNotifications());
-      dispatch(clearSearchResults());
-    };
+  const shouldFetch = (data = [], lastFetched = null, maxAgeInMinutes = 10) => {
+    if (!lastFetched) return true;
+    if (data.length === 0) return true; // No data → fetch
+    const age = Date.now() - lastFetched;
+    return age > maxAgeInMinutes * 60 * 1000; // Older than 10 min → fetch
+  };
+  console.log("recipes length", recipes.length);
 
-    loadData();
-  }, [dispatch]);
+  useFocusEffect(
+    useCallback(() => {
+      const loadData = async () => {
+        if (shouldFetch(recipes, lastFetched)) {
+          await dispatch(fetchRecipes());
+        }
+
+        if (shouldFetch(weekRecipes, weekLastFetched)) {
+          await dispatch(fetchWeekRecipes());
+        }
+
+        await dispatch(fetchNotifications());
+        dispatch(clearSearchResults());
+      };
+
+      loadData();
+    }, [dispatch, recipes, lastFetched, weekRecipes, weekLastFetched])
+  );
 
   const handleProfileClick = () => {
     navigation.navigate("Account");
@@ -90,7 +108,7 @@ export const Home = ({ navigation }) => {
           <View style={styles.profileDiv}>
             {user?.image ? (
               <Image
-                source={{ uri: user.image }}
+                source={user.image}
                 style={{
                   width: 70,
                   height: 70,
@@ -98,6 +116,8 @@ export const Home = ({ navigation }) => {
                   borderWidth: 2,
                   borderColor: "teal",
                 }}
+                contentFit="cover"
+                transition={300}
               />
             ) : (
               <Ionicons name="person-circle-outline" size={70} color="white" />
@@ -186,10 +206,12 @@ export const Home = ({ navigation }) => {
                 <Image
                   source={
                     recipe.image
-                      ? { uri: recipe.image }
+                      ? recipe.image
                       : require("../../assets/images/pasta.jpg")
                   }
                   style={styles.RecImg}
+                  contentFit="cover"
+                  transition={500}
                 />
               </View>
               <View style={styles.recTextContainer}>
@@ -217,8 +239,10 @@ export const Home = ({ navigation }) => {
           >
             <View key={recipe._id} style={styles.recipeWeekImgContainer}>
               <Image
-                source={{ uri: recipe.image }}
+                source={recipe.image}
                 style={styles.recipeWeekImg}
+                contentFit="cover"
+                transition={500}
               />
               <View style={styles.textOverlay}>
                 <Text style={styles.weekRecipeText}>{recipe.title}</Text>
