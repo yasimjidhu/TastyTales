@@ -165,7 +165,7 @@ export const fetchMadeItRecipes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = await AsyncStorage.getItem('token');
     try {
-      const response = await fetch(`${API_URL}/api/recipes/madeIt`, {
+      const response = await fetch(`${API_URL}/api/recipes/made-it`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -263,6 +263,32 @@ export const fetchSavedRecipes = createAsyncThunk(
   }
 );
 
+export const fetchLikedRecipes = createAsyncThunk(
+  "recipes/fetchLikedRecipes",
+  async (_, { rejectWithValue }) => {
+    const token = await AsyncStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_URL}/api/recipes/liked`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to fetch liked recipes");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message || "Something went wrong");
+    }
+  }
+);
+
 export const fetchSuggestedRecipes = createAsyncThunk(
   "recipes/fetchSuggestions",
   async (availableIngredients) => {
@@ -321,6 +347,7 @@ const initialState = {
   recentlyViewed: [],
   savedRecipes: [],
   popularRecipes: [],
+  likedRecipes : [],
   madeIt: [],
   suggestions: [],
   totalPages: 0,
@@ -498,6 +525,19 @@ const recipeSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(fetchLikedRecipes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLikedRecipes.fulfilled, (state, action) => {
+        state.loading = false;
+        state.likedRecipes = action.payload;
+      })
+      .addCase(fetchLikedRecipes.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       .addCase(saveOrUnsaveRecipe.pending, (state) => {
         state.loading = true;
         state.error = null;
