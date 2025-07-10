@@ -347,11 +347,13 @@ const initialState = {
   recentlyViewed: [],
   savedRecipes: [],
   popularRecipes: [],
-  likedRecipes : [],
+  likedRecipes: [],
   madeIt: [],
   suggestions: [],
   totalPages: 0,
   currentPage: 1,
+  lastFetched: null,
+  weekLastFetched:null
 };
 
 const recipeSlice = createSlice({
@@ -393,6 +395,7 @@ const recipeSlice = createSlice({
       .addCase(fetchRecipes.fulfilled, (state, action) => {
         state.loading = false;
         state.recipes = action.payload;
+        state.lastFetched = Date.now();
       })
       .addCase(fetchRecipes.rejected, (state, action) => {
         state.loading = false;
@@ -481,6 +484,7 @@ const recipeSlice = createSlice({
       .addCase(fetchWeekRecipes.fulfilled, (state, action) => {
         state.weekRecipes = action.payload;
         state.loading = false;
+        state.weekLastFetched = Date.now();
       })
       .addCase(fetchWeekRecipes.rejected, (state, action) => {
         state.loading = false;
