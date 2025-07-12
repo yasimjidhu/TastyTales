@@ -20,6 +20,8 @@ import ViewAll from "../screens/ViewAll";
 import RecipeSuggester from "../screens/RecipeSuggester";
 import NotificationsScreen from "../screens/NotificationScreen";
 import GroceryListScreen from "../screens/GroceryListScreen";
+import MealPlanner from "../screens/mealPlanner";
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -75,7 +77,7 @@ function MainTabs() {
         options={({ navigation }) => ({
           headerRight: () => (
             <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
-              {/* Cart Icon with Badge */}
+              {/* Grocery Icon */}
               <View style={{ marginRight: 20 }}>
                 <Ionicons
                   name="cart-outline"
@@ -90,8 +92,8 @@ function MainTabs() {
                 )}
               </View>
 
-              {/* Notifications Icon with Badge */}
-              <View>
+              {/* Notifications Icon */}
+              <View style={{ marginRight: 20 }}>
                 <Ionicons
                   name="notifications-outline"
                   size={24}
@@ -104,10 +106,19 @@ function MainTabs() {
                   </View>
                 )}
               </View>
+
+              {/* ✅ Meal Planner Icon */}
+              <Ionicons
+                name="calendar-outline"
+                size={24}
+                color="black"
+                onPress={() => navigation.navigate("MealPlanner")}
+              />
             </View>
-          )
+          ),
         })}
       />
+
       <Tab.Screen name="Suggest" component={RecipeSuggester} />
       <Tab.Screen name="Add" component={AddRecipe} />
       <Tab.Screen name="Bookmarks" component={BookMark} />
@@ -135,6 +146,7 @@ function MainStack() {
       <Stack.Screen name="Category" component={Category} />
       <Stack.Screen name="ViewAll" component={ViewAll} options={{ title: "Recipes you have made", headerBackTitle: "Back" }} />
       <Stack.Screen name="Grocery" component={GroceryListScreen} />
+      <Stack.Screen name="MealPlanner" component={MealPlanner} options={{ title: "Meal Planner" }} />
     </Stack.Navigator>
   );
 }

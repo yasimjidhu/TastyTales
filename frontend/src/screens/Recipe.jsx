@@ -29,6 +29,7 @@ import {
 import { renderStars } from "../components/RenderStars";
 import CustomAlert from "../components/Alert";
 import { addGroceryItem } from "../store/slices/grocery";
+import { saveMealPlan, getMealPlan } from "../store/slices/mealPlan";
 
 const { width, height } = Dimensions.get("window");
 
@@ -38,6 +39,9 @@ export default function Recipe({ navigation }) {
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertVisible, setAlertVisible] = useState(false);
+  const [selectedDay, setSelectedDay] = useState("Mon");
+  const [showMealModal, setShowMealModal] = useState(false);
+  const [selectedMealType, setSelectedMealType] = useState("breakfast");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewsList, setShowReviewsList] = useState(false);
   const [checkedIngredients, setCheckedIngredients] = useState(new Set());
@@ -53,14 +57,43 @@ export default function Recipe({ navigation }) {
   const { savedRecipes, popularRecipes } = useSelector(
     (state) => state.recipes
   );
+  const mealPlan = useSelector((state) => state.mealPlan?.data);
 
   useEffect(() => {
     if (recipeId) {
       dispatch(getUserProfile(user?._id));
       dispatch(fetchRecipe(recipeId));
       dispatch(fetchPopularRecipes());
+      dispatch(getMealPlan());
     }
   }, [recipeId, dispatch]);
+
+  const handleAddToMealPlan = () => {
+    setShowMealModal(true);
+  };
+
+  const handleConfirmMealPlan = () => {
+    const updatedMeals = { ...mealPlan?.meals };
+
+    updatedMeals[selectedDay] = {
+      ...(updatedMeals[selectedDay] || {}),
+      [selectedMealType]: recipeId,
+    };
+
+    dispatch(
+      saveMealPlan({
+        weekStart: new Date().toISOString().split("T")[0],
+        meals: updatedMeals,
+      })
+    );
+
+    setShowMealModal(false);
+    setAlertTitle("Meal Plan updated");
+    setAlertMessage(
+      `${recipe?.title} added to ${selectedDay} - ${selectedMealType}`
+    );
+    setAlertVisible(true);
+  };
 
   const handleLikeOrUnlike = () => {
     dispatch(likeOrUnlikeRecipe(recipeId));
@@ -386,7 +419,7 @@ export default function Recipe({ navigation }) {
                   color: "#7F8C8D",
                   textAlign: "center",
                   marginTop: 4,
-                  marginBottom:6
+                  marginBottom: 6,
                 }}
               >
                 Please check off ingredients you've prepared to begin cooking.
@@ -397,23 +430,32 @@ export default function Recipe({ navigation }) {
               style={styles.primaryButton}
               onPress={() => {
                 const uncheckedIngredients = (recipe?.ingredients || [])
-                .filter((_, index) => !checkedIngredients.has(index))
-                .map((ingredient)=>({
-                  ...ingredient,
-                  recipeId:recipeId
-                }))
+                  .filter((_, index) => !checkedIngredients.has(index))
+                  .map((ingredient) => ({
+                    ...ingredient,
+                    recipeId: recipeId,
+                  }));
 
-                if(uncheckedIngredients.length == 0){
-                  setAlertMessage("No ingredients, You have already prepared all ingredients ")
-                  return
+                if (uncheckedIngredients.length == 0) {
+                  setAlertMessage(
+                    "No ingredients, You have already prepared all ingredients "
+                  );
+                  return;
                 }
-                  
+
                 dispatch(addGroceryItem(uncheckedIngredients));
                 navigation.navigate("Grocery");
               }}
             >
               <Ionicons name="cart" size={24} color="white" />
               <Text style={styles.primaryButtonText}>Add to Grocery List</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleAddToMealPlan}
+            >
+              <Ionicons name="calendar-outline" size={20} color="#4ECDC4" />
+              <Text style={styles.secondaryButtonText}>Add to Meal Plan</Text>
             </TouchableOpacity>
 
             {/* Secondary Buttons: Save & Review */}
@@ -448,6 +490,86 @@ export default function Recipe({ navigation }) {
           </View>
         </View>
       </ScrollView>
+      {/* Add to meal plan moda.*/}
+      <Modal
+        visible={showMealModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowMealModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add to Meal Plan</Text>
+              <TouchableOpacity onPress={() => setShowMealModal(false)}>
+                <Ionicons name="close" size={24} color="#2C3E50" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Day Selection */}
+            <Text style={styles.reviewInputLabel}>Select Day</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 16 }}
+            >
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayButton,
+                    selectedDay === day && styles.dayButtonSelected,
+                  ]}
+                  onPress={() => setSelectedDay(day)}
+                >
+                  <Text
+                    style={
+                      selectedDay === day
+                        ? styles.dayTextSelected
+                        : styles.dayText
+                    }
+                  >
+                    {day}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Meal Type Selection */}
+            <Text style={styles.reviewInputLabel}>Select Meal Type</Text>
+            <View style={styles.secondaryButtons}>
+              {["breakfast", "lunch", "dinner"].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[
+                    styles.secondaryButton,
+                    selectedMealType === type && { backgroundColor: "#4ECDC4" },
+                  ]}
+                  onPress={() => setSelectedMealType(type)}
+                >
+                  <Text
+                    style={{
+                      color: selectedMealType === type ? "white" : "#4ECDC4",
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
+                  >
+                    {type}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Confirm Button */}
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleConfirmMealPlan}
+            >
+              <Text style={styles.submitButtonText}>Add to Plan</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Add Review Modal */}
       <Modal
@@ -504,6 +626,78 @@ export default function Recipe({ navigation }) {
         transparent={true}
         onRequestClose={() => setShowReviewsList(false)}
       >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add to Meal Plan</Text>
+              <TouchableOpacity onPress={() => setShowMealModal(false)}>
+                <Ionicons name="close" size={24} color="#2C3E50" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Day Selection */}
+            <Text style={styles.reviewInputLabel}>Select Day</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 16 }}
+            >
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayButton,
+                    selectedDay === day && styles.dayButtonSelected,
+                  ]}
+                  onPress={() => setSelectedDay(day)}
+                >
+                  <Text
+                    style={
+                      selectedDay === day
+                        ? styles.dayTextSelected
+                        : styles.dayText
+                    }
+                  >
+                    {day}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Meal Type Selection */}
+            <Text style={styles.reviewInputLabel}>Select Meal Type</Text>
+            <View style={styles.secondaryButtons}>
+              {["breakfast", "lunch", "dinner"].map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[
+                    styles.secondaryButton,
+                    selectedMealType === type && { backgroundColor: "#4ECDC4" },
+                  ]}
+                  onPress={() => setSelectedMealType(type)}
+                >
+                  <Text
+                    style={{
+                      color: selectedMealType === type ? "white" : "#4ECDC4",
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
+                  >
+                    {type}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Confirm Button */}
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleConfirmMealPlan}
+            >
+              <Text style={styles.submitButtonText}>Add to Plan</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -858,6 +1052,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#E8F4F8",
+    marginBottom: 4,
   },
   secondaryButtonText: {
     fontSize: 16,
@@ -1083,5 +1278,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 6,
     fontSize: 14,
+  },
+  dayButton: {
+    backgroundColor: "#ECF0F1",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  dayButtonSelected: {
+    backgroundColor: "#4ECDC4",
+  },
+  dayText: {
+    color: "#2C3E50",
+    fontWeight: "600",
+  },
+  dayTextSelected: {
+    color: "white",
+    fontWeight: "600",
   },
 });

@@ -29,9 +29,6 @@ export const getUserProfile = createAsyncThunk(
   }
 );
 
-
-
-
 export const login = createAsyncThunk(
   'user/login',
   async ({ email, password }, { rejectWithValue }) => {
@@ -53,7 +50,6 @@ export const login = createAsyncThunk(
       if (!data.token) {
         return rejectWithValue('No token received from server');
       }
-      // Store the token in AsyncStorage
       await AsyncStorage.setItem('token', data.token);
       return data;
     } catch (error) {
