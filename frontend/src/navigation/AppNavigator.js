@@ -19,12 +19,14 @@ import Category from "../screens/Category";
 import ViewAll from "../screens/ViewAll";
 import RecipeSuggester from "../screens/RecipeSuggester";
 import NotificationsScreen from "../screens/NotificationScreen";
+import GroceryListScreen from "../screens/GroceryListScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTabs() {
   const { unreadCount } = useSelector((state) => state.notifications);
+  const { list } = useSelector((state) => state.grocery)
 
   return (
     <Tab.Navigator
@@ -72,20 +74,38 @@ function MainTabs() {
         component={Home}
         options={({ navigation }) => ({
           headerRight: () => (
-            <View style={{ marginRight: 15 }}>
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="black"
-                onPress={() => navigation.navigate("Notifications")}
-              />
-              {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{unreadCount}</Text>
-                </View>
-              )}
+            <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+              {/* Cart Icon with Badge */}
+              <View style={{ marginRight: 20 }}>
+                <Ionicons
+                  name="cart-outline"
+                  size={24}
+                  color="black"
+                  onPress={() => navigation.navigate("Grocery")}
+                />
+                {list?.length > 0 && (
+                  <View style={[styles.badge, { right: -10, top: -8 }]}>
+                    <Text style={styles.badgeText}>{list.length}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Notifications Icon with Badge */}
+              <View>
+                <Ionicons
+                  name="notifications-outline"
+                  size={24}
+                  color="black"
+                  onPress={() => navigation.navigate("Notifications")}
+                />
+                {unreadCount > 0 && (
+                  <View style={[styles.badge, { right: -10, top: -8 }]}>
+                    <Text style={styles.badgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </View>
             </View>
-          ),
+          )
         })}
       />
       <Tab.Screen name="Suggest" component={RecipeSuggester} />
@@ -114,6 +134,7 @@ function MainStack() {
       <Stack.Screen name="CookingSteps" component={CookingStepsScreen} />
       <Stack.Screen name="Category" component={Category} />
       <Stack.Screen name="ViewAll" component={ViewAll} options={{ title: "Recipes you have made", headerBackTitle: "Back" }} />
+      <Stack.Screen name="Grocery" component={GroceryListScreen} />
     </Stack.Navigator>
   );
 }
@@ -145,14 +166,13 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    right: -6,
-    top: -3,
     backgroundColor: "red",
     borderRadius: 10,
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1,
   },
   badgeText: {
     color: "white",

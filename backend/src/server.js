@@ -4,6 +4,7 @@ const cors = require("cors");
 const Connect = require('./config/db')
 const userRoutes = require("../src/routes/userRoutes");
 const recipeRoutes = require("../src/routes/recipeRoutes");
+const groceryRoutes = require("../src/routes/grocceryRoutes")
 const categoryRoutes = require('../src/routes/categoryRoutes')
 const notificationRoutes = require('../src/routes/notificationRoutes')
 
@@ -22,6 +23,7 @@ app.use("/", (req, res,next) => {
 app.use("/api/users", userRoutes);
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/category",categoryRoutes)
+app.use("/api/grocery",groceryRoutes)
 app.use("/api/notifications",notificationRoutes)
 
 // Start the Server
