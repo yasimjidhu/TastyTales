@@ -20,12 +20,29 @@ const MealPlanner = () => {
   const [localPlan, setLocalPlan] = useState({});
 
   useEffect(() => {
-    dispatch(getMealPlan());
+    const fetchMealPlan = async () => {
+      try {
+        const result = await dispatch(getMealPlan());
+      } catch (error) {
+        console.error('❌ Error fetching meal plan:', error);
+      }
+    };
+    
+    fetchMealPlan();
   }, []);
 
   useEffect(() => {
-    if (mealPlan?.meals) setLocalPlan(mealPlan.meals);
+    console.log('🔄 mealPlan state changed:', mealPlan);
+    if (mealPlan?.meals) {
+      console.log('mealplan meals is stored in redux',mealPlan.meals)
+      console.log('📋 Setting local plan with meals:', mealPlan.meals);
+      setLocalPlan(mealPlan.meals);
+    }
   }, [mealPlan]);
+
+  useEffect(() => {
+    console.log('📱 Local plan updated:', localPlan);
+  }, [localPlan]);
 
   const handleSelectRecipe = (day, type) => {
     const recipeId = undefined;
@@ -34,19 +51,27 @@ const MealPlanner = () => {
       [day]: {
         ...(localPlan[day] || {}),
         [type]: recipeId,
-      },
+      },      
     };
+    console.log('🎯 Selecting recipe for', day, type);
+    console.log('📝 Updated plan:', updated);
     setLocalPlan(updated);
     dispatch(setLocalPlan({ ...mealPlan, meals: updated }));
   };
 
-  const handleSave = () => {
-    dispatch(
-      saveMealPlan({
-        weekStart: new Date().toISOString().split("T")[0],
-        meals: localPlan,
-      })
-    );
+  const handleSave = async () => {
+    try {
+      console.log('💾 Saving meal plan:', localPlan);
+      const result = await dispatch(
+        saveMealPlan({
+          weekStart: new Date().toISOString().split("T")[0],
+          meals: localPlan,
+        })
+      );
+      console.log('✅ Meal plan saved:', result);
+    } catch (error) {
+      console.error('❌ Error saving meal plan:', error);
+    }
   };
 
   return (
@@ -73,7 +98,6 @@ const MealPlanner = () => {
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

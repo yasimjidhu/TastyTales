@@ -13,8 +13,6 @@ import SearchBar from "../components/SearchBar";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile } from "../store/slices/user";
-
 import {
   addRecentlyViewed,
   clearSearchResults,
@@ -22,20 +20,22 @@ import {
   fetchWeekRecipes,
 } from "../store/slices/recipe";
 import LoadingSpinner from "../components/LoadingSpinner";
-import {
-  fetchNotifications,
-  updateExpoToken,
-} from "../store/slices/notification";
-import { registerForPushNotificationsAsync } from "../notifications/registerPushToken";
+import { fetchNotifications } from "../store/slices/notification";
 
 export const Home = ({ navigation }) => {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
   const dispatch = useDispatch();
 
+  const today = new Date().toLocaleString("en-US", { weekday: "short" });
   const { user, loading, error } = useSelector((state) => state.user);
   const { recipes, searchResults, weekRecipes } = useSelector(
     (state) => state.recipes
   );
+  const mealPlan = useSelector((state) => state.mealPlan?.data);
+  const todaysMeals = mealPlan?.meals?.[today];
+  console.log('today ---->>',today)
+  console.log('meal plan in ui',mealPlan)
+  console.log('todays meals------------->>',todaysMeals)
 
   const handleCategoryPress = (category) => {
     navigation.navigate("Category", { category });
@@ -47,7 +47,7 @@ export const Home = ({ navigation }) => {
       navigation.navigate("Recipe", { recipeId });
     }
   };
-
+console.log('todays meals from redux',todaysMeals)
   useEffect(() => {
     const loadData = async () => {
       await dispatch(fetchRecipes());
@@ -163,6 +163,19 @@ export const Home = ({ navigation }) => {
           </TouchableOpacity>
         </ScrollView>
       </View>
+      {todaysMeals && (
+        <View style={styles.mealCard}>
+          <Text style={styles.title}>🍽️ Today's Meal Plan</Text>
+          {["breakfast", "lunch", "dinner"].map((type) => (
+            <Text key={type}>
+              {type.charAt(0).toUpperCase() + type.slice(1)}:{" "}
+              {todaysMeals?.[type]
+                ? `Recipe ID: ${todaysMeals[type].slice(-6)}`
+                : "Not Planned"}
+            </Text>
+          ))}
+        </View>
+      )}
 
       {/* Recommendation Section */}
       <View style={styles.recommendationContainer}>
@@ -370,5 +383,17 @@ const styles = StyleSheet.create({
     textAlign: "right",
     fontFamily: "Primary-Regular",
     fontSize: 10,
+  },
+  mealCard: {
+    backgroundColor: "#f9f9f9",
+    padding: 16,
+    borderRadius: 10,
+    marginTop: 20,
+    elevation: 2,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
 });
