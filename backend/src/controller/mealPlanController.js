@@ -1,15 +1,108 @@
 const MealPlan = require('../models/mealPlanner')
 
 const getMealPlan = async (req, res) => {
-    try {
-        console.log('get mealplan reached in backed,',req.user._id)
-        const plan = await MealPlan.findOne({ userId: req.user._id })
-        console.log('meal plan got', plan)
-        res.json(plan)
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching meal plan" })
-    }
-}
+  try {
+
+    const plan = await MealPlan.aggregate([
+      { $match: { userId: req.user._id } },
+
+      // Convert Map to array of { day, meals } for unwinding
+      {
+        $project: {
+          userId: 1,
+          weekStart: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          meals: { $objectToArray: "$meals" },
+        },
+      },
+
+      // Unwind meals array
+      { $unwind: "$meals" },
+
+      // Lookup breakfast
+      {
+        $lookup: {
+          from: "recipes",
+          localField: "meals.v.breakfast",
+          foreignField: "_id",
+          as: "meals.v.breakfast",
+        },
+      },
+      {
+        $unwind: {
+          path: "$meals.v.breakfast",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Lookup lunch
+      {
+        $lookup: {
+          from: "recipes",
+          localField: "meals.v.lunch",
+          foreignField: "_id",
+          as: "meals.v.lunch",
+        },
+      },
+      {
+        $unwind: {
+          path: "$meals.v.lunch",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Lookup dinner
+      {
+        $lookup: {
+          from: "recipes",
+          localField: "meals.v.dinner",
+          foreignField: "_id",
+          as: "meals.v.dinner",
+        },
+      },
+      {
+        $unwind: {
+          path: "$meals.v.dinner",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      // Reconstruct meals as object
+      {
+        $group: {
+          _id: "$_id",
+          userId: { $first: "$userId" },
+          weekStart: { $first: "$weekStart" },
+          createdAt: { $first: "$createdAt" },
+          updatedAt: { $first: "$updatedAt" },
+          meals: {
+            $push: {
+              k: "$meals.k",
+              v: "$meals.v",
+            },
+          },
+        },
+      },
+
+      {
+        $project: {
+          userId: 1,
+          weekStart: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          meals: { $arrayToObject: "$meals" },
+        },
+      },
+    ]);
+
+    res.json(plan[0] || {}); // Return first (and only) document
+  } catch (err) {
+    console.error("Error in getMealPlan:", err);
+    res.status(500).json({ message: "Error fetching meal plan" });
+  }
+};
+
 
 const saveMealPlan = async (req, res) => {
   try {

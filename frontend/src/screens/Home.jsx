@@ -21,6 +21,7 @@ import {
 } from "../store/slices/recipe";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { fetchNotifications } from "../store/slices/notification";
+import { getMealPlan } from "../store/slices/mealPlan";
 
 export const Home = ({ navigation }) => {
   const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL;
@@ -33,9 +34,6 @@ export const Home = ({ navigation }) => {
   );
   const mealPlan = useSelector((state) => state.mealPlan?.data);
   const todaysMeals = mealPlan?.meals?.[today];
-  console.log('today ---->>',today)
-  console.log('meal plan in ui',mealPlan)
-  console.log('todays meals------------->>',todaysMeals)
 
   const handleCategoryPress = (category) => {
     navigation.navigate("Category", { category });
@@ -47,12 +45,13 @@ export const Home = ({ navigation }) => {
       navigation.navigate("Recipe", { recipeId });
     }
   };
-console.log('todays meals from redux',todaysMeals)
+  console.log("todays meals from redux", todaysMeals);
   useEffect(() => {
     const loadData = async () => {
       await dispatch(fetchRecipes());
       await dispatch(fetchWeekRecipes());
       await dispatch(fetchNotifications());
+      await dispatch(getMealPlan());
       dispatch(clearSearchResults());
     };
 
@@ -163,20 +162,7 @@ console.log('todays meals from redux',todaysMeals)
           </TouchableOpacity>
         </ScrollView>
       </View>
-      {todaysMeals && (
-        <View style={styles.mealCard}>
-          <Text style={styles.title}>🍽️ Today's Meal Plan</Text>
-          {["breakfast", "lunch", "dinner"].map((type) => (
-            <Text key={type}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}:{" "}
-              {todaysMeals?.[type]
-                ? `Recipe ID: ${todaysMeals[type].slice(-6)}`
-                : "Not Planned"}
-            </Text>
-          ))}
-        </View>
-      )}
-
+ 
       {/* Recommendation Section */}
       <View style={styles.recommendationContainer}>
         <View style={styles.flexRow}>
@@ -243,6 +229,85 @@ console.log('todays meals from redux',todaysMeals)
           </TouchableOpacity>
         ))}
       </ScrollView>
+           {todaysMeals && (
+        <View style={styles.mealPlanContainer}>
+          <View style={styles.mealPlanHeader}>
+            <Text style={styles.mealPlanTitle}>🍽️ Today's Meal Plan</Text>
+            <Text style={styles.mealPlanDate}>
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              })}
+            </Text>
+          </View>
+
+          <View style={styles.mealGrid}>
+            {["breakfast", "lunch", "dinner"].map((type) => {
+              const recipe = todaysMeals[type];
+              const icons = {
+                breakfast: "🥞",
+                lunch: "🍛",
+                dinner: "🍽️",
+              };
+
+              return (
+                <View key={type} style={styles.mealCard}>
+                  <View style={styles.mealCardHeader}>
+                    <Text style={styles.mealEmoji}>{icons[type]}</Text>
+                    <Text style={styles.mealTypeText}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                  </View>
+
+                  {recipe?._id ? (
+                    <TouchableOpacity
+                      style={styles.mealWithRecipe}
+                      onPress={() => handleDishClick(recipe._id, recipe)}
+                    >
+                      <View style={styles.mealImageContainer}>
+                        <Image
+                          source={
+                            recipe.image
+                              ? { uri: recipe.image }
+                              : require("../../assets/images/pasta.jpg")
+                          }
+                          style={styles.mealImage}
+                        />
+                        <View style={styles.mealImageOverlay}>
+                          <Ionicons name="eye" size={18} color="#fff" />
+                        </View>
+                      </View>
+                      <View style={styles.mealInfo}>
+                        <Text style={styles.mealTitle} numberOfLines={1}>
+                          {recipe.title}
+                        </Text>
+                        <Text style={styles.mealAuthor} numberOfLines={1}>
+                          By {recipe.authorName || "Unknown"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.emptyMealCard}>
+                      <Ionicons
+                        name="alert-circle-outline"
+                        size={28}
+                        color="#cbd5e0"
+                        style={styles.emptyMealIcon}
+                      />
+                      <Text style={styles.emptyMealText}>Not planned</Text>
+                      <TouchableOpacity style={styles.addMealButton}>
+                        <Text style={styles.addMealButtonText}>+ Add</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      )}
+
     </ScrollView>
   );
 };
@@ -395,5 +460,249 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  mealPlanContainer: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  mealPlanHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  mealPlanTitle: {
+    fontSize: 22,
+    fontFamily: "Primary-ExtraBold",
+    color: "#2d3748",
+  },
+
+  mealPlanDate: {
+    fontSize: 14,
+    fontFamily: "Primary-Regular",
+    color: "#718096",
+  },
+
+  mealGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 15,
+  },
+
+  mealCard: {
+    width: "30%",
+    backgroundColor: "#f8fafc",
+    borderRadius: 15,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+
+  mealCardHeader: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  mealEmoji: {
+    fontSize: 28,
+    marginBottom: 5,
+  },
+
+  mealTypeText: {
+    fontSize: 14,
+    fontFamily: "Primary-Bold",
+    color: "#4a5568",
+  },
+
+  mealWithRecipe: {
+    alignItems: "center",
+  },
+
+  mealImageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    overflow: "hidden",
+    marginBottom: 10,
+    position: "relative",
+  },
+
+  mealImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+
+  mealImageOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  mealInfo: {
+    alignItems: "center",
+    width: "100%",
+  },
+
+  mealTitle: {
+    fontSize: 12,
+    fontFamily: "Primary-Bold",
+    color: "#2d3748",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+
+  mealAuthor: {
+    fontSize: 10,
+    fontFamily: "Primary-Regular",
+    color: "#718096",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+
+  mealStats: {
+    alignItems: "center",
+    gap: 2,
+  },
+
+  mealStatText: {
+    fontSize: 9,
+    fontFamily: "Primary-Regular",
+    color: "#a0aec0",
+  },
+
+  emptyMealCard: {
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+
+  emptyMealIcon: {
+    marginBottom: 10,
+  },
+
+  emptyMealText: {
+    fontSize: 12,
+    fontFamily: "Primary-Regular",
+    color: "#a0aec0",
+    marginBottom: 10,
+  },
+
+  addMealButton: {
+    backgroundColor: "#teal",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+
+  addMealButtonText: {
+    color: "white",
+    fontSize: 10,
+    fontFamily: "Primary-Bold",
+  },
+  mealScrollContainer: {
+    marginTop: 15,
+  },
+
+  horizontalMealCard: {
+    width: 280,
+    backgroundColor: "#ffffff",
+    borderRadius: 15,
+    padding: 15,
+    marginRight: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  mealCardLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  mealSubtitle: {
+    fontSize: 11,
+    fontFamily: "Primary-Regular",
+    color: "#a0aec0",
+    marginTop: 2,
+  },
+
+  mealCardRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 2,
+  },
+
+  horizontalMealImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+  },
+
+  horizontalMealInfo: {
+    flex: 1,
+  },
+
+  horizontalMealTitle: {
+    fontSize: 14,
+    fontFamily: "Primary-Bold",
+    color: "#2d3748",
+    marginBottom: 2,
+  },
+
+  horizontalMealAuthor: {
+    fontSize: 11,
+    fontFamily: "Primary-Regular",
+    color: "#718096",
+    marginBottom: 6,
+  },
+
+  horizontalMealBadge: {
+    backgroundColor: "#e6fffa",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    alignSelf: "flex-start",
+  },
+
+  badgeText: {
+    fontSize: 9,
+    fontFamily: "Primary-Bold",
+    color: "teal",
+  },
+
+  emptyHorizontalMeal: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flex: 2,
+  },
+
+  quickAddButton: {
+    backgroundColor: "#f0fff4",
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "teal",
   },
 });
