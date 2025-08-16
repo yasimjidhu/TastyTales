@@ -3,19 +3,37 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Modal from "react-native-modal";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const CustomAlert = ({ visible, title, message, onConfirm, onCancel }) => {
+const CustomAlert = ({ visible, title, message, onConfirm, onCancel, type = "info" }) => {
+  // Define icon based on type
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return { name: "checkmark-circle-outline", color: "#4ECDC4" };
+      case "error":
+        return { name: "close-circle-outline", color: "#FF6B6B" };
+      case "warning":
+        return { name: "warning-outline", color: "#FFA500" };
+      default:
+        return { name: "information-circle-outline", color: "#4D96FF" };
+    }
+  };
+
+  const { name, color } = getIcon();
+
   return (
     <Modal isVisible={visible} backdropOpacity={0.4}>
       <View style={styles.modalContainer}>
-        <Ionicons name="alert-circle-outline" size={50} color="#FF6B6B" />
+        <Ionicons name={name} size={50} color={color} />
 
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.message}>{message}</Text>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </TouchableOpacity>
+          {onCancel && (
+            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
             <Text style={styles.confirmText}>Ok</Text>
