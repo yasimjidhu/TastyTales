@@ -14,6 +14,8 @@ router.use(authMiddleware);
 // Static routes first
 router.put('/update-expo-token', userController.updateExpoToken);
 router.post('/follow/:authorId', userController.followOrUnfollow);
+router.post("/preferences", userController.submitPreferences);
+
 
 // 🔻 Dynamic routes AFTER static ones
 router.get("/:userId", userController.getUserProfile);

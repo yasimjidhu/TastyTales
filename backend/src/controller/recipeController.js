@@ -44,6 +44,29 @@ const addRecipe = async (req, res) => {
         });
 
         await newRecipe.save();
+
+        // ✅ Notify all followers
+        const user = await User.findById(_id).populate("followers", "expoToken");
+        if (user?.followers?.length) {
+            for (const follower of user.followers) {
+                await Notification.create({
+                    recipient: follower._id,
+                    sender: _id,
+                    type: "new_recipe",
+                    message: `${name} added a new recipe "${title}"`,
+                    relatedResource: newRecipe._id,
+                    resourceType: "recipes",
+                });
+
+                if (follower.expoToken) {
+                    await sendPushNotifications(
+                        follower.expoToken,
+                        "New Recipe Added 🍲",
+                        `${name} just added a new recipe: "${title}"`
+                    );
+                }
+            }
+        }
         res.status(201).json({ message: "Recipe created successfully", recipe: newRecipe });
     } catch (error) {
         res.status(400).json({ error: "Failed to create recipe" });
@@ -99,8 +122,8 @@ const likeOrUnlike = async (req, res) => {
         const user = await User.findById(userId);
         const recipe = await Recipe.findById(recipeId)
 
-        if(!recipe) return res.status(404).json({message:"Recipe not found"})
-        
+        if (!recipe) return res.status(404).json({ message: "Recipe not found" })
+
         if (user.likedRecipes.includes(recipeId)) {
             user.likedRecipes = user.likedRecipes.filter(id => id.toString() !== recipeId);
             await user.save()
@@ -109,20 +132,20 @@ const likeOrUnlike = async (req, res) => {
 
         user.likedRecipes.push(recipeId);
         await user.save();
-        
-        if( recipe.authorId && !recipe.authorId?.equals(userId)){
+
+        if (recipe.authorId && !recipe.authorId?.equals(userId)) {
 
             await Notification.create({
-                recipient:recipe.authorId,
-                sender:userId,
-                type:"like",
-                message:`${req.user.name} liked your recipe`,
-                relatedResource:recipeId,
-                resourceType:"recipes"
+                recipient: recipe.authorId,
+                sender: userId,
+                type: "like",
+                message: `${req.user.name} liked your recipe`,
+                relatedResource: recipeId,
+                resourceType: "recipes"
             })
 
             const author = await User.findById(recipe.authorId)
-            if(author?.expoToken){
+            if (author?.expoToken) {
                 await sendPushNotifications(
                     author.expoToken,
                     "Your recipe was liked ❤️",
@@ -201,17 +224,17 @@ const addReview = async (req, res) => {
         });
         await recipe.save();
 
-        if( recipe.authorId && !recipe.authorId.equals(req.user.id)){
+        if (recipe.authorId && !recipe.authorId.equals(req.user.id)) {
             await Notification.create({
-                recipient:recipe.authorId,
-                sender:req.user.id,
-                type:"comment",
-                message:`${req.user.name} commented on your recipe`,
-                relatedResource:recipeId,
-                resourceType:"recipes"
+                recipient: recipe.authorId,
+                sender: req.user.id,
+                type: "comment",
+                message: `${req.user.name} commented on your recipe`,
+                relatedResource: recipeId,
+                resourceType: "recipes"
             })
 
-            if(author?.expoToken){
+            if (author?.expoToken) {
                 await sendPushNotifications(
                     author.expoToken,
                     "New Comment 💬",
@@ -277,7 +300,8 @@ const markAsMadeIt = async (req, res) => {
 }
 
 const getMadeItRecipes = async (req, res) => {
-    const userId = req.user._id;
+    console.log('getmadeit recipes in controller',req.params.userId)
+    const userId = req.params.userId || req.user._id;
     try {
         const result = await User.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(userId) } },
@@ -295,11 +319,10 @@ const getMadeItRecipes = async (req, res) => {
                 }
             }
         ]);
+        console.log('result in made it recipes', result)
 
-        if (!result.length || result[0].madeItRecipes.length === 0) {
-            return res.status(404).json({ error: "No recipes marked as made" });
-        }
-       res.json(result[0].madeItRecipes);
+        console.log('made it recipes', result[0].madeItRecipes)
+        res.json(result[0].madeItRecipes);
     } catch (error) {
         res.status(500).json({ error: "Failed to retrieve made recipes" });
     }

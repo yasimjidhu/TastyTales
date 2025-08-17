@@ -16,10 +16,10 @@ router.post("/", recipeController.addRecipe);
 router.get("/saved", recipeController.getSavedRecipes);
 router.get('/liked',recipeController.getLikedRecipes)
 router.post("/suggest", recipeController.getSuggestedRecipes);
-router.get("/made-it", recipeController.getMadeItRecipes);
 router.get("/:id", recipeController.getOne);
 
 router.post("/made-it", recipeController.markAsMadeIt);
+router.get("/made-it/:userId", recipeController.getMadeItRecipes);
 
 router.post("/:recipeId/like", recipeController.likeOrUnlike);
 router.post("/:recipeId/save", recipeController.saveOrUnsave);

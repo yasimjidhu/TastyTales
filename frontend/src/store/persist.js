@@ -6,7 +6,7 @@ import groceryReducer from './slices/grocery'
 const recipePersistConfig = {
   key: 'recipe',
   storage: AsyncStorage,
-  whitelist: ['madeIt', 'recentlyViewed',], 
+  whitelist: ['madeIt', 'recentlyViewed','recipes'], 
 };
 
 const groceryPersistConfig = {

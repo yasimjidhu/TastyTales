@@ -19,11 +19,13 @@ const register = async (req, res) => {
         if (existingUser) return res.status(409).json({ error: "Email already exists" });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ name, email, password: hashedPassword });
+        const user = new User({ name, email, password: hashedPassword,preferencesCompleted: false });
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         await user.save();
-
-        res.status(201).json({ user: { _id: user._id, name: user.name, email: user.email }, message: "User registered successfully!" });
+        console.log("User registered successfully:", user);
+        res.status(201).json({ user,token, message: "User registered successfully!" });
     } catch (error) {
         console.error("Error during registration:", error);
         res.status(500).json({ error: "Registration failed" });
@@ -50,12 +52,7 @@ const login = async (req, res) => {
 
         res.json({
             token,
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                image: user.image
-            }
+            user
         });
     } catch (error) {
         console.error("Error during login:", error);
@@ -162,7 +159,7 @@ const followOrUnfollow = async (req, res) => {
             });
 
             // Send push Notifications
-            if(author.expoToken){
+            if (author.expoToken) {
                 await sendPushNotifications(
                     author.expoToken,
                     "New Follower",
@@ -185,6 +182,7 @@ const followOrUnfollow = async (req, res) => {
                     followingCount: { $size: "$following" },
                     followers: 1,
                     following: 1,
+                    preferencesCompleted: 1,
                 },
             },
         ]);
@@ -196,17 +194,52 @@ const followOrUnfollow = async (req, res) => {
     }
 };
 
-const updateExpoToken = async (req,res)=>{
+const updateExpoToken = async (req, res) => {
     const userId = req.user._id
-    const {expoToken} = req.body
+    const { expoToken } = req.body
 
-    console.log('expo token in backend',expoToken)
-    if(!expoToken) return res.status(400).json({message:"expoToken is required"})
-    
-    await User.findByIdAndUpdate(userId,{expoToken},{new:true})
+    console.log('expo token in backend', expoToken)
+    if (!expoToken) return res.status(400).json({ message: "expoToken is required" })
+
+    await User.findByIdAndUpdate(userId, { expoToken }, { new: true })
     console.log('expo token updated')
-    res.status(200).json({message:"Expo push token updated successfully"})
+    res.status(200).json({ message: "Expo push token updated successfully" })
 }
+
+const submitPreferences = async (req, res) => {
+    try {
+        console.log("Submitting preferences in controller:", req.body);
+        const userId = req.user._id;
+        const { foodType, lifestyle, skill, cuisines, allergies, healthGoals } = req.body;
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        // Update preferences
+        user.preferences = {
+            foodType: foodType || user.preferences.foodType,
+            lifestyle: lifestyle || user.preferences.lifestyle,
+            skill: skill || user.preferences.skill,
+            cuisines: cuisines || user.preferences.cuisines,
+            allergies: allergies || user.preferences.allergies,
+            healthGoals: healthGoals || user.preferences.healthGoals,
+        };
+
+        user.preferencesCompleted = true;
+        await user.save();
+
+        console.log("Preferences updated successfully:", user);
+        res.status(200).json({
+            message: "Preferences updated successfully",
+            user,
+        });
+    } catch (err) {
+        console.error("Error updating preferences:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
 
 // ------------------ Exports ------------------
 
@@ -217,5 +250,6 @@ module.exports = {
     updateProfileImage,
     updateUserProfile,
     followOrUnfollow,
-    updateExpoToken
+    updateExpoToken,
+    submitPreferences
 };

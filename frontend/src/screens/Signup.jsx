@@ -1,17 +1,19 @@
 import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
+import { register,setUser } from '../store/slices/user';
 import Constants from 'expo-constants';
 
-
 export default function Signup({ navigation }) {
-    const [name,setName] = useState(null)
-    const [email, setEmail] = useState(null)
-    const [password, setPassword] = useState(null)
-    const [confirmPassword,setConfirmPassword] = useState(null)
-    const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword,setShowConfirmPassword] = useState(false)
+    const dispatch = useDispatch();
+    const { user, loading } = useSelector(state => state.user);
 
-    const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL 
+    const [name,setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword,setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword,setShowConfirmPassword] = useState(false);
 
     const handleSignup = async () => {
         if (!name || !email || !password || !confirmPassword) {
@@ -23,30 +25,12 @@ export default function Signup({ navigation }) {
             alert("Passwords do not match");
             return;
         }
-    
+
         try {
-            const response = await fetch(`${API_URL}/api/users/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    password
-                })
-            });
-    
-            const data = await response.json();
-    
-            if (response.ok) {
-                alert("Signup successful! You can now log in.");
-                navigation.navigate("Login");  // Redirect to Login page after signup
-            } else {
-                alert(data.error || "Signup failed. Try again.");
-            }
+            // Dispatch the register thunk
+            const resultAction = await dispatch(register({ name, email, password }));
         } catch (error) {
-            console.error("Signup Error:", error);
+            console.log(error);
             alert("Something went wrong. Please try again later.");
         }
     };    

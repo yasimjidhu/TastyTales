@@ -49,6 +49,7 @@ export default function Recipe({ navigation }) {
   const recipe = useSelector((state) =>
     state.recipes.recipes.find((r) => r._id == recipeId)
   );
+  console.log('recipe in recipe page',recipe?.authorId)
   const { user, loading, error } = useSelector((state) => state.user);
   const { savedRecipes, popularRecipes } = useSelector(
     (state) => state.recipes
@@ -61,6 +62,34 @@ export default function Recipe({ navigation }) {
       dispatch(fetchPopularRecipes());
     }
   }, [recipeId, dispatch]);
+
+  const handleAddToMealPlan = () => {
+    setShowMealModal(true);
+  };
+
+  const handleConfirmMealPlan = async () => {
+    const updatedMeals = { ...mealPlan?.meals };
+
+    updatedMeals[selectedDay] = {
+      ...(updatedMeals[selectedDay] || {}),
+      [selectedMealType]: recipeId,
+    };
+
+    dispatch(
+      saveMealPlan({
+        weekStart: new Date().toISOString().split("T")[0],
+        meals: updatedMeals,
+      })
+    );
+    await dispatch(getMealPlan())
+
+    setShowMealModal(false);
+    setAlertTitle("Meal Plan updated");
+    setAlertMessage(
+      `${recipe?.title} added to ${selectedDay} - ${selectedMealType}`
+    );
+    setAlertVisible(true);
+  };
 
   const handleLikeOrUnlike = () => {
     dispatch(likeOrUnlikeRecipe(recipeId));

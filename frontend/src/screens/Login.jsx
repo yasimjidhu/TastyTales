@@ -1,8 +1,15 @@
-import { View, Text, StyleSheet, Image, TextInput, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../store/slices/user';
-
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { login, googleLogin } from "../store/slices/user";
+import useGoogleAuth from "../hooks/useGoogleAuth";
 
 export default function Login({ navigation }) {
     const [email, setEmail] = useState(null)
@@ -13,56 +20,111 @@ export default function Login({ navigation }) {
 
     const {user,loading,error,} = useSelector((state) => state.user)
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            alert('Please fill all fields')
-            return
-        }
-        const resultAction = await dispatch(login({ email, password }))
-        if(login.fulfilled.match(resultAction)) {
-            console.log('Login successful:');
-        }else{
-            alert(resultAction.payload || 'Login failed, please try again')
-        }
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please fill all fields");
+      return;
     }
+    const resultAction = await dispatch(login({ email, password }));
+    if (login.fulfilled.match(resultAction)) {
+      console.log("Login successful");
+    } else {
+      alert(resultAction.payload || "Login failed, please try again");
+    }
+  };
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.iconContainer}>
-                <Image style={styles.icon} source={require('../../assets/images/breakFast.png')} />
-            </View>
-            <Text style={styles.heading}>Let's Sign in</Text>
-            <Text style={styles.description}>Experience All The recipes from all over the world</Text>
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder='Email'
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    value={email}
-                    onChangeText={setEmail}
-                />
-                <View style={styles.passwordContainer}>
-                    <TextInput
-                        style={styles.passwordInput}
-                        placeholder='Password'
-                        secureTextEntry={!showPassword}
-                        keyboardType='password'
-                        autoCapitalize='none'
-                        value={password}
-                        onChangeText={setPassword}
-                    />
-                    <TouchableOpacity onPress={()=>setShowPassword(!showPassword)} style={styles.eyeButton}>
-                        <Text>{showPassword ? '👁️' : '🙈'}</Text>
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-                <Text style={styles.signupText}>Don't Have an account ? <Text style={styles.toSignup} onPress={() => navigation.navigate('Signup')}>Signup</Text></Text>
-            </View>
+  const handleGoogleLogin = async () => {
+    try {
+      const { idToken, accessToken, user } = await signInWithGoogle();
+      if (!idToken) {
+        alert("Google Sign-In failed");
+        return;
+      }
+      // Send idToken or accessToken to your backend
+      const resultAction = await dispatch(googleLogin(idToken));
+      if (googleLogin.fulfilled.match(resultAction)) {
+        console.log("Google Login successful:", user?.name);
+      } else {
+        alert(resultAction.payload || "Google Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Google Sign-In failed");
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <Image
+          style={styles.icon}
+          source={require("../../assets/images/breakFast.png")}
+        />
+      </View>
+      <Text style={styles.heading}>Let's Sign in</Text>
+      <Text style={styles.description}>
+        Experience all the recipes from all over the world
+      </Text>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Password"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeButton}
+          >
+            <Text>{showPassword ? "👁️" : "🙈"}</Text>
+          </TouchableOpacity>
         </View>
-    )
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Logging in..." : "Login"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.googleButton}
+          onPress={handleGoogleLogin}
+          disabled={loading}
+        >
+          <Image
+            source={require("../../assets/icons/google-icon.png")}
+            style={styles.googleIcon}
+          />
+          <Text>{loading ? "Please wait..." : "Sign in with Google"}</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.signupText}>
+          Don't have an account?{" "}
+          <Text
+            style={styles.toSignup}
+            onPress={() => navigation.navigate("Signup")}
+          >
+            Signup
+          </Text>
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -10,7 +10,7 @@ export default function Category({ navigation }) {
   const route = useRoute();
 
   const { category } = route.params;
-  const { recipes, loading } = useSelector((state) => state.recipes);
+  const { categoryRecipes, loading } = useSelector((state) => state.recipes);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function Category({ navigation }) {
     <View style={styles.container}>
       {loading && page === 1 ? (
         <ActivityIndicator size="large" color="teal" style={styles.loader} />
-      ) : recipes.length === 0 ? (
+      ) : categoryRecipes.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Image
             source={require("../../assets/images/noData.png")} 
@@ -37,7 +37,7 @@ export default function Category({ navigation }) {
           <Text style={styles.emptyText}>No {category} Recipes Found</Text>
         </View>
       ) : (
-        <ListRecipes recipes={recipes} fetchMore={fetchMoreRecipes} />
+        <ListRecipes recipes={categoryRecipes} fetchMore={fetchMoreRecipes} />
       )}
     </View>
   );
