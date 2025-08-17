@@ -467,7 +467,6 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     textAlign: "center",
-    color: "black",
     fontFamily: "Primary-Bold",
   },
   recommendationContainer: {
@@ -532,22 +531,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   weekRecipeText: {
-    color: "white",
     textAlign: "left",
     fontFamily: "Primary-ExtraBold",
     fontSize: 12,
+    color: "white",
   },
   ownerText: {
-    color: "black",
     textAlign: "right",
     fontFamily: "Primary-Regular",
     fontSize: 10,
+    color:"black"
   },
   ownerTextInRecipesWeek: {
-    color: "white",
     textAlign: "right",
     fontFamily: "Primary-Regular",
     fontSize: 10,
+    color:"white"
   },
   mealCard: {
     backgroundColor: "#f9f9f9",

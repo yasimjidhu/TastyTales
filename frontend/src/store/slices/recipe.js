@@ -162,10 +162,11 @@ export const fetchWeekRecipes = createAsyncThunk(
 // GET Made It Recipes
 export const fetchMadeItRecipes = createAsyncThunk(
   "recipes/fetchMadeItRecipes",
-  async (_, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
+    console.log('fetching made it recipes for user:', userId);
     const token = await AsyncStorage.getItem('token');
     try {
-      const response = await fetch(`${API_URL}/api/recipes/made-it`, {
+      const response = await fetch(`${API_URL}/api/recipes/made-it/${userId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -177,6 +178,7 @@ export const fetchMadeItRecipes = createAsyncThunk(
         return rejectWithValue(errorData.error || "Failed to fetch Made It recipes");
       }
       const data = await response.json();
+      console.log('Made It recipes fetched:', data);
       return data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch Made It recipes");
@@ -342,12 +344,13 @@ const initialState = {
   recipes: [],
   loading: false,
   error: null,
+  categoryRecipes: [],
   searchResults: [],
   weekRecipes: [],
   recentlyViewed: [],
   savedRecipes: [],
   popularRecipes: [],
-  likedRecipes : [],
+  likedRecipes: [],
   madeIt: [],
   suggestions: [],
   totalPages: 0,
@@ -381,7 +384,12 @@ const recipeSlice = createSlice({
     },
     clearSuggestions: (state) => {
       state.suggestions = [];
-    }
+    },
+    clearCategoryRecipes: (state) => {
+      state.categoryRecipes = [];
+      state.totalPages = 0;
+      state.currentPage = 1;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -441,14 +449,13 @@ const recipeSlice = createSlice({
       .addCase(fetchCategoryWiseRecipes.fulfilled, (state, action) => {
         const { recipes, totalPages, currentPage } = action.payload;
         if (currentPage === 1) {
-          state.recipes = recipes;
+          state.categoryRecipes = recipes;
         } else {
-          state.recipes = [...state.recipes, ...recipes];
+          state.categoryRecipes = [...(state.categoryRecipes || []), ...recipes];
         }
-        state.loading = false
+        state.loading = false;
         state.totalPages = totalPages;
         state.currentPage = currentPage;
-
       })
       .addCase(fetchCategoryWiseRecipes.rejected, (state, action) => {
         state.loading = false;
@@ -596,7 +603,8 @@ export const {
   clearSearchResults,
   addRecentlyViewed,
   clearRecentlyViewed,
-  clearSuggestions
+  clearSuggestions,
+  clearCategoryRecipes, 
 } = recipeSlice.actions;
 
 export default recipeSlice.reducer;

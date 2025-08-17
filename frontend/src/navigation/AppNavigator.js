@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native"; // Added Text import
-import { NavigationContainer } from "@react-navigation/native";
+import { View, Text, StyleSheet } from "react-native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -21,14 +21,14 @@ import RecipeSuggester from "../screens/RecipeSuggester";
 import NotificationsScreen from "../screens/NotificationScreen";
 import GroceryListScreen from "../screens/GroceryListScreen";
 import MealPlanner from "../screens/mealPlanner";
-
+import Preferences from "../screens/PreferenceWizard";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTabs() {
   const { unreadCount } = useSelector((state) => state.notifications);
-  const { list } = useSelector((state) => state.grocery)
+  const { list } = useSelector((state) => state.grocery);
 
   return (
     <Tab.Navigator
@@ -67,8 +67,6 @@ function MainTabs() {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarLabel: route.name === "Add" ? "" : route.name,
-        tabBarActiveTintColor: "teal",
-        tabBarInactiveTintColor: "gray",
       })}
     >
       <Tab.Screen
@@ -82,7 +80,6 @@ function MainTabs() {
                 <Ionicons
                   name="cart-outline"
                   size={24}
-                  color="black"
                   onPress={() => navigation.navigate("Grocery")}
                 />
                 {list?.length > 0 && (
@@ -97,7 +94,6 @@ function MainTabs() {
                 <Ionicons
                   name="notifications-outline"
                   size={24}
-                  color="black"
                   onPress={() => navigation.navigate("Notifications")}
                 />
                 {unreadCount > 0 && (
@@ -107,13 +103,7 @@ function MainTabs() {
                 )}
               </View>
 
-              {/* ✅ Meal Planner Icon */}
-              <Ionicons
-                name="calendar-outline"
-                size={24}
-                color="black"
-                onPress={() => navigation.navigate("MealPlanner")}
-              />
+              {/* Theme Toggle Icon (Moon/Sun) */}
             </View>
           ),
         })}
@@ -128,10 +118,15 @@ function MainTabs() {
 }
 
 function AuthStack() {
+  const { user } = useSelector((state) => state.user);
+  console.log('user in AuthStack:', user);
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-      <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
+      {!user && <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />}
+      {!user && <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />}
+      {user && !user.preferencesCompleted && (
+        <Stack.Screen name="Preferences" component={Preferences} options={{ title: "Preferences" }} />
+      )}
     </Stack.Navigator>
   );
 }
@@ -155,8 +150,8 @@ export default function AppNavigator() {
   const { user } = useSelector((state) => state.user);
 
   return (
-    <NavigationContainer>
-      {user ? <MainStack /> : <AuthStack />}
+    <NavigationContainer  key={user?.preferencesCompleted ? "main" : "auth"} >
+      {user?.preferencesCompleted ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }

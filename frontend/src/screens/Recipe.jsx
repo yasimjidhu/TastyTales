@@ -53,6 +53,7 @@ export default function Recipe({ navigation }) {
   const recipe = useSelector((state) =>
     state.recipes.recipes.find((r) => r._id == recipeId)
   );
+  console.log('recipe in recipe page',recipe?.authorId)
   const { user, loading, error } = useSelector((state) => state.user);
   const { savedRecipes, popularRecipes } = useSelector(
     (state) => state.recipes
@@ -72,7 +73,7 @@ export default function Recipe({ navigation }) {
     setShowMealModal(true);
   };
 
-  const handleConfirmMealPlan = () => {
+  const handleConfirmMealPlan = async () => {
     const updatedMeals = { ...mealPlan?.meals };
 
     updatedMeals[selectedDay] = {
@@ -86,6 +87,7 @@ export default function Recipe({ navigation }) {
         meals: updatedMeals,
       })
     );
+    await dispatch(getMealPlan())
 
     setShowMealModal(false);
     setAlertTitle("Meal Plan updated");

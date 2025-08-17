@@ -23,7 +23,7 @@ const NotificationRegistrar = () => {
       if (!user) return;
 
       const token = await registerForPushNotificationsAsync()
-      console.log('token got while registering',token)
+      console.log('token got while registering', token)
       if (token) {
         dispatch(updateExpoToken(token))
       }
@@ -53,11 +53,11 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <AuthProvider>
-            <NotificationRegistrar />
-            <AppNavigator />
-            <StatusBar style="auto" />
-          </AuthProvider>
+            <AuthProvider>
+              <NotificationRegistrar />
+              <AppNavigator />
+              <StatusBar style="auto" />
+            </AuthProvider>
         </PersistGate>
       </Provider>
     </GestureHandlerRootView>

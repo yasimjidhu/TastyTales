@@ -38,16 +38,17 @@ export default function Account({ navigation }) {
   const [activeTab, setActiveTab] = useState("posts"); // 'posts', 'saved', 'liked'
 
   const { user, imageUploading } = useSelector((state) => state.user);
-  const { likedRecipes, savedRecipes, madeIt } = useSelector(
+  const { likedRecipes, savedRecipes, madeIt,recentlyViewed } = useSelector(
     (state) => state.recipes
   );
   const dispatch = useDispatch();
+  console.log('user in account',user)
 
   useEffect(() => {
     dispatch(getUserProfile(user?._id));
     dispatch(fetchLikedRecipes());
     dispatch(fetchSavedRecipes());
-    dispatch(fetchMadeItRecipes());
+    dispatch(fetchMadeItRecipes(user?._id));
   }, [dispatch]);
 
   useEffect(() => {
@@ -341,17 +342,14 @@ export default function Account({ navigation }) {
         )}
       </View>
 
-      {/* Quick Stats (non-editable) */}
-      {!editMode && (
-        <View style={styles.quickStats}>
-          <View style={styles.quickStatItem}>
-            <Text style={styles.quickStatNumber}>
-              {user?.recentlyViewed?.length || 0}
-            </Text>
-            <Text style={styles.quickStatLabel}>Recently Viewed</Text>
-          </View>
-        </View>
-      )}
+      <CustomAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        type={alertConfig.type}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </ScrollView>
   );
 }

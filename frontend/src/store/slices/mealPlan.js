@@ -95,7 +95,6 @@ const mealPlanSlice = createSlice({
                 state.error = null
             })
             .addCase(saveMealPlan.fulfilled,(state,action)=>{
-                state.data = action.payload
                 state.loading = false
             })
             .addCase(saveMealPlan.rejected,(state,action)=>{

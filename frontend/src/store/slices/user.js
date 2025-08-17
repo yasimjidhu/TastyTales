@@ -76,9 +76,42 @@ export const register = createAsyncThunk(
       }
 
       const data = await response.json();
+      console.log('Register response:', data);
+      if (!data.token) {
+        return rejectWithValue('No token received from server');
+      }
+      await AsyncStorage.setItem('token', data.token);
+
       return data;
     } catch (error) {
       return rejectWithValue(error.message || 'Something went wrong');
+    }
+  }
+);
+
+
+export const submitPreferences = createAsyncThunk(
+  "user/submit-preferences",
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await fetch(`${API_URL}/api/users/preferences`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        return rejectWithValue(err?.error || "Failed to save preferences");
+      }
+      const data = await res.json();
+      console.log("Preferences saved successfully:", data);
+      return data;
+    } catch (e) {
+      return rejectWithValue(e.message || "Something went wrong");
     }
   }
 );
@@ -142,7 +175,7 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
     const token = await AsyncStorage.getItem('token');
 
     try {
-      console.log('like or unlike alled in slice',recipeId)
+      console.log('like or unlike alled in slice', recipeId)
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/like`, {
         method: 'POST',
         headers: {
@@ -208,6 +241,9 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -230,11 +266,25 @@ const userSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
+        console.log('register fulfilled in slice payload', action.payload);
         state.user = action.payload.user;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(submitPreferences.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitPreferences.fulfilled, (state,action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.lastSavedAt = Date.now();
+      })
+      .addCase(submitPreferences.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to save preferences";
       })
       .addCase(updateUserProfileImage.pending, (state) => {
         state.imageUploading = true;
@@ -305,5 +355,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout } = userSlice.actions;
+export const { logout, setUser } = userSlice.actions;
 export default userSlice.reducer;
