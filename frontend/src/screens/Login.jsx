@@ -9,7 +9,6 @@ import {
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, googleLogin } from "../store/slices/user";
-import GoogleLoginButton from "../hooks/useGoogleAuth";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState(null);
@@ -19,7 +18,6 @@ export default function Login({ navigation }) {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.user);
 
-  const { signInWithGoogle } = useGoogleAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -100,10 +98,6 @@ export default function Login({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        <GoogleLoginButton
-          onSuccess={handleGoogleLogin}
-          onError={(err) => alert("Google login failed: " + err.message)}
-        />
 
         <Text style={styles.signupText}>
           Don't have an account?{" "}
