@@ -147,10 +147,12 @@ export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
   async ({ userId, name, phone }, { rejectWithValue }) => {
     try {
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ name, phone }),
       });
@@ -225,9 +227,9 @@ export const followOrUnfollow = createAsyncThunk(
 const initialState = {
   user: null,
   token: null,
-  expoToken:null,
+  expoToken: null,
   loading: false,
-  imageUploading: false, 
+  imageUploading: false,
   error: null,
 };
 
@@ -288,15 +290,18 @@ const userSlice = createSlice({
       })
       .addCase(updateUserProfileImage.pending, (state) => {
         state.imageUploading = true;
+        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.error = null;
       })
       .addCase(updateUserProfileImage.fulfilled, (state, action) => {
+        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.imageUploading = false;
         if (state.user) {
           state.user.image = action.payload.user.image; // Update profile image in user state
         }
       })
       .addCase(updateUserProfileImage.rejected, (state, action) => {
+        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.imageUploading = false;
         state.error = action.payload;
       })

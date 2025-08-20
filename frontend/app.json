@@ -2,20 +2,24 @@
   "expo": {
     "name": "recipe_app",
     "slug": "recipe_app",
+    "scheme": "recipeapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "extra": {
-      "EXPO_PUBLIC_API_URL": "http://10.147.114.28:5000",
+      "EXPO_PUBLIC_API_URL": "http://10.84.223.28:5000",
       "EXPO_PUBLIC_CLOUDINARY_URL": "https://api.cloudinary.com/v1_1/dhla5xcqb/image/upload",
+      "GOOGLE_WEB_CLIENT_ID":"358007302525-efkn0i74tu9j8usuongjmb9png4j496l.apps.googleusercontent.com",
+      "GOOGLE_IOS_CLIENT_ID": "358007302525-pfvf7pesrr0udv0je305fhtrn9tg0ji7.apps.googleusercontent.com",
+      "GOOGLE_ANDROID_CLIENT_ID": "358007302525-i1fb9q9jvmk50u6kuugbtk71h0osdlo7.apps.googleusercontent.com",
       "eas": {
         "projectId": "f669cef6-f1a7-477e-9fa9-660881d327df"
       }
     },
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icons/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -34,6 +38,12 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.358007302525-pfvf7pesrr0udv0je305fhtrn9tg0ji7"
+        }
+      ],
       "expo-font"
     ],
     "owner": "yasimdirshad"
