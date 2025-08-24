@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector } from "react-redux";
+import * as Linking from "expo-linking";
 
 // Screens
 import { Home } from "../screens/Home";
@@ -23,12 +24,25 @@ import GroceryListScreen from "../screens/GroceryListScreen";
 import MealPlanner from "../screens/mealPlanner";
 import Preferences from "../screens/PreferenceWizard";
 
+// Shared Kitchen Screens
+import KitchenHomeScreen from "../screens/KitchenHomeScreen";
+import KitchenSetupScreen from "../screens/kitchenSetup";
+import InventoryScreen from "../screens/Inventory";
+import ExpensesScreen from "../screens/Expenses";
+import ScheduleScreen from "../screens/Schedule";
+import MembersScreen from "../screens/Members";
+
+// New Join/Create Kitchen Screens
+import JoinKitchenScreen from "../screens/JoinKitchen";
+import KitchenChoiceScreen from "../screens/kitchenChoice"; // NEW
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTabs() {
   const { unreadCount } = useSelector((state) => state.notifications);
   const { list } = useSelector((state) => state.grocery);
+  const { user } = useSelector((state) => state.user);
 
   return (
     <Tab.Navigator
@@ -52,8 +66,6 @@ function MainTabs() {
             case "Account":
               iconName = focused ? "person" : "person-outline";
               break;
-            default:
-              break;
           }
 
           if (route.name === "Add") {
@@ -67,6 +79,8 @@ function MainTabs() {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarLabel: route.name === "Add" ? "" : route.name,
+        tabBarActiveTintColor: "#3B82F6",
+        tabBarInactiveTintColor: "#6B7280",
       })}
     >
       <Tab.Screen
@@ -75,6 +89,21 @@ function MainTabs() {
         options={({ navigation }) => ({
           headerRight: () => (
             <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+              {/* Kitchen Icon */}
+              <View style={{ marginRight: 20 }}>
+                <Ionicons
+                  name="restaurant-outline"
+                  size={24}
+                  onPress={() => {
+                    if (user?.kitchen) {
+                      navigation.navigate("KitchenHome");  // ✅ user already in a kitchen
+                    } else {
+                      navigation.navigate("KitchenChoice"); // ✅ no kitchen yet
+                    }
+                  }}
+                />
+              </View>
+
               {/* Grocery Icon */}
               <View style={{ marginRight: 20 }}>
                 <Ionicons
@@ -102,13 +131,10 @@ function MainTabs() {
                   </View>
                 )}
               </View>
-
-              {/* Theme Toggle Icon (Moon/Sun) */}
             </View>
           ),
         })}
       />
-
       <Tab.Screen name="Suggest" component={RecipeSuggester} />
       <Tab.Screen name="Add" component={AddRecipe} />
       <Tab.Screen name="Bookmarks" component={BookMark} />
@@ -119,7 +145,6 @@ function MainTabs() {
 
 function AuthStack() {
   const { user } = useSelector((state) => state.user);
-  console.log('user in AuthStack:', user);
   return (
     <Stack.Navigator>
       {!user && <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />}
@@ -139,21 +164,26 @@ function MainStack() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: "Notifications" }} />
       <Stack.Screen name="CookingSteps" component={CookingStepsScreen} />
       <Stack.Screen name="Category" component={Category} />
-      <Stack.Screen name="ViewAll" component={ViewAll} options={{ title: "Recipes you have made", headerBackTitle: "Back" }} />
+      <Stack.Screen name="ViewAll" component={ViewAll} />
       <Stack.Screen name="Grocery" component={GroceryListScreen} />
       <Stack.Screen name="MealPlanner" component={MealPlanner} options={{ title: "Meal Planner" }} />
+
+      {/* Kitchen flow */}
+      <Stack.Screen name="KitchenChoice" component={KitchenChoiceScreen} options={{ title: "Join or Create Kitchen" }} />
+      <Stack.Screen name="KitchenSetup" component={KitchenSetupScreen} options={{ title: "Setup Your Kitchen" }} />
+      <Stack.Screen name="JoinKitchen" component={JoinKitchenScreen} options={{ title: "Join Kitchen" }} />
+      <Stack.Screen name="KitchenHome" component={KitchenHomeScreen} options={{ title: "Shared Kitchen Manager" }} />
+      <Stack.Screen name="Inventory" component={InventoryScreen} options={{ title: "Inventory" }} />
+      <Stack.Screen name="Expenses" component={ExpensesScreen} options={{ title: "Expenses" }} />
+      <Stack.Screen name="Schedule" component={ScheduleScreen} options={{ title: "Cooking Schedule" }} />
+      <Stack.Screen name="Members" component={MembersScreen} options={{ title: "Kitchen Members" }} />
     </Stack.Navigator>
   );
 }
 
 export default function AppNavigator() {
   const { user } = useSelector((state) => state.user);
-
-  return (
-    <NavigationContainer  key={user?.preferencesCompleted ? "main" : "auth"} >
-      {user?.preferencesCompleted ? <MainStack /> : <AuthStack />}
-    </NavigationContainer>
-  );
+  return user?.preferencesCompleted ? <MainStack /> : <AuthStack />;
 }
 
 const styles = StyleSheet.create({

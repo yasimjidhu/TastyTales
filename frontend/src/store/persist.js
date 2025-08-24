@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import recipeReducer from './slices/recipe';
 import groceryReducer from './slices/grocery'
 import mealPlanReducer from './slices/mealPlan'
+import kitchenReducer from './slices/kitchen'
+import expenseReducer from './slices/expenses'
 
 const recipePersistConfig = {
   key: 'recipe',
@@ -22,7 +24,21 @@ const mealPlanPersistConfig = {
   whitelist:['data']
 }
 
+const kitchenPersistConfig = {
+  key:'kitchen',
+  storage:AsyncStorage,
+  whitelist:['kitchen','kitchenId','members','expenses','balances','schedule','inventory']
+}
+
+const expensesPersistConfig = {
+  key:'expenses',
+  storage:AsyncStorage,
+  whitelist:['expenses','balances']
+}
+
 export const persistedRecipeReducer = persistReducer(recipePersistConfig, recipeReducer);
 export const persistedGroceryReducer = persistReducer(groceryPersistConfig,groceryReducer)
 export const persistedMealPlanReducer = persistReducer(mealPlanPersistConfig,mealPlanReducer)
+export const persistedKitchenReducer = persistReducer(kitchenPersistConfig,kitchenReducer)
+export const persistedExpenseReducer = persistReducer(expensesPersistConfig,expenseReducer)
 

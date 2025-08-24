@@ -5,9 +5,11 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/authContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from "@react-navigation/native";
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import store, { persistor } from './src/store/store';
+import * as Linking from 'expo-linking';
 import useNotificationListener from './src/notifications/useNotificationListener';
 import { registerForPushNotificationsAsync } from './src/notifications/registerPushToken';
 import { updateExpoToken } from './src/store/slices/notification';
@@ -34,6 +36,18 @@ const NotificationRegistrar = () => {
   return null
 }
 
+const prefix = Linking.createURL('/');
+
+const linking = {
+  prefixes: [prefix, 'myapp://'], // myapp://invite/kitchenId
+  config: {
+    screens: {
+      JoinKitchen: 'invite/:inviteCode',
+      Home: 'home',
+    },
+  },
+};
+
 export default function App() {
   const [fontsLoaded] = useFonts({
     'Primary-Regular': require('./assets/fonts/Zain/Zain-Regular.ttf'),
@@ -53,11 +67,13 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-            <AuthProvider>
-              <NotificationRegistrar />
+          <AuthProvider>
+            <NotificationRegistrar />
+            <NavigationContainer linking={linking} key={Math.random()}>
               <AppNavigator />
-              <StatusBar style="auto" />
-            </AuthProvider>
+            </NavigationContainer>
+            <StatusBar style="auto" />
+          </AuthProvider>
         </PersistGate>
       </Provider>
     </GestureHandlerRootView>

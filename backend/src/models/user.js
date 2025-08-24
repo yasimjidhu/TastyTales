@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
 
   // 🔹Preferences for personalization
-  preferencesCompleted: { type: Boolean, default:false },
+  preferencesCompleted: { type: Boolean, default: false },
   preferences: {
     foodType: {
       type: String,
@@ -32,7 +32,9 @@ const UserSchema = new mongoose.Schema({
     cuisines: [{ type: String }], // Example: ["indian", "italian", "chinese"]
     allergies: [{ type: String }], // Example: ["nuts", "gluten", "dairy"]
     healthGoals: [{ type: String }], // Example: ["weight-loss", "high-protein"]
-  }
+  },
+  kitchen: { type: mongoose.Schema.Types.ObjectId, ref: "Kitchen", default: null }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("users", UserSchema);

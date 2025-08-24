@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "extra": {
-      "EXPO_PUBLIC_API_URL": "http://10.84.223.28:5000",
+      "EXPO_PUBLIC_API_URL": "http://10.101.47.28:5000",
       "EXPO_PUBLIC_CLOUDINARY_URL": "https://api.cloudinary.com/v1_1/dhla5xcqb/image/upload",
       "GOOGLE_WEB_CLIENT_ID":"358007302525-efkn0i74tu9j8usuongjmb9png4j496l.apps.googleusercontent.com",
       "GOOGLE_IOS_CLIENT_ID": "358007302525-pfvf7pesrr0udv0je305fhtrn9tg0ji7.apps.googleusercontent.com",
