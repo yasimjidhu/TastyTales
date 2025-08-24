@@ -22,6 +22,8 @@ const InventoryScreen = () => {
   const { items: inventory, loading } = useSelector(
     (state) => state?.inventory
   );
+  const { user } = useSelector((state) => state.user);
+
   const members = useSelector((state) => state.kitchen?.members);
   const [showAddItem, setShowAddItem] = useState(false);
   const [editingItem, setEditingItem] = useState(null); // for pre-filling form in modal
@@ -34,12 +36,12 @@ const InventoryScreen = () => {
   });
 
   useEffect(() => {
-    dispatch(fetchInventory());
-    console.log("Fetched inventory",members)
-  }, [dispatch]);
+    if (user?.kitchen) {
+      dispatch(fetchInventory(user.kitchen));
+    }
+  }, [user?.kitchen, dispatch]);
 
   const handleAddItem = (newItem) => {
-    console.log("Adding new item:", newItem);
     dispatch(addInventoryItem(newItem));
     setShowAddItem(false);
   };
@@ -72,7 +74,10 @@ const InventoryScreen = () => {
     });
   };
 
-  const lowStockItems = inventory?.filter((item) => item?.isLowsStock);
+  const lowStockItems =
+    inventory && inventory.length > 0
+      ? inventory?.filter((item) => item?.isLowStock)
+      : [];
 
   return (
     <View style={styles.container}>
@@ -124,12 +129,14 @@ const InventoryScreen = () => {
                   <Text style={styles.itemDetail}>
                     Status:
                     <Text
-                      style={
-                        item.isLowsStock ? styles.lowStock : styles.inStock
-                      }
+                      style={item.isLowStock ? styles.lowStock : styles.inStock}
                     >
-                      {item.isLowsStock ? " Low Stock" : " In Stock"}
+                      {item.isLowStock ? " Low Stock" : " In Stock"}
                     </Text>
+                  </Text>
+                  <Text style={styles.detailLine}>
+                    Added by:{" "}
+                    <Text style={styles.detailValue}>{item.addedBy}</Text>
                   </Text>
                 </View>
                 <View style={styles.itemActions}>
@@ -145,7 +152,7 @@ const InventoryScreen = () => {
 
                   <TouchableOpacity
                     style={styles.deleteBtn}
-                    onPress={()=> handleDeleteItem(item._id)}
+                    onPress={() => handleDeleteItem(item._id)}
                   >
                     <Text style={styles.btnText}>Delete</Text>
                   </TouchableOpacity>
@@ -229,6 +236,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  detailLine: {
+    fontSize: 13,
+    color: "#64748b",
+    marginBottom: 4,
+  },
+  detailValue: {
+    fontWeight: "500",
+    color: "#334155",
   },
   itemHeader: {
     flexDirection: "row",

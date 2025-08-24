@@ -131,16 +131,12 @@ const saveMealPlan = async (req, res) => {
       for (const [day, mealTypes] of Object.entries(meals)) {
         const existingDayMeals = newMeals.get(day) || {};
         
-        console.log('existingday meals', existingDayMeals);
-        console.log('new meal types', mealTypes);
-        
         // Merge existing meals with new meals for this day
         const mergedDayMeals = {
           ...existingDayMeals,
           ...mealTypes,
         };
         
-        console.log('merged day meals', mergedDayMeals);
         
         // Set the merged meals to the new Map
         newMeals.set(day, mergedDayMeals);
@@ -151,7 +147,6 @@ const saveMealPlan = async (req, res) => {
       existingPlan.weekStart = weekStart;
       await existingPlan.save();
 
-      console.log("✅ Meal plan updated successfully", existingPlan);
       res.json(existingPlan);
     } else {
       // Create new
@@ -160,7 +155,6 @@ const saveMealPlan = async (req, res) => {
         weekStart,
         meals,
       });
-      console.log("✅ New meal plan created", newPlan);
       res.json(newPlan);
     }
   } catch (err) {

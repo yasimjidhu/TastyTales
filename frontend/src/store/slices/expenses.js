@@ -14,7 +14,6 @@ export const fetchExpenses = createAsyncThunk(
     async (kitchenId, { rejectWithValue }) => {
         const token = await getToken();
         try {
-            console.log('fetching expenses for kitchenId', kitchenId)
             const res = await fetch(`${API_URL}/api/expenses/${kitchenId}/expenses`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -32,8 +31,7 @@ export const addExpense = createAsyncThunk(
     async ({ kitchenId, expense }, { rejectWithValue }) => {
         const token = await getToken();
         try {
-            console.log('expense in addexpensethunk', expense)
-            console.log('kitchenId in addexpensethunk', kitchenId)
+
             const res = await fetch(`${API_URL}/api/expenses/${kitchenId}/expenses`, {
                 method: "POST",
                 headers: {
@@ -56,9 +54,6 @@ export const updateExpense = createAsyncThunk(
     async ({ kitchenId, expenseId, updates }, { rejectWithValue }) => {
         const token = await getToken();
         try {
-            console.log('updates in updateExpenseThunk', updates)
-            console.log('kitchenId in updateExpenseThunk', kitchenId)
-            console.log('expenseId in updateExpenseThunk', expenseId)
             const res = await fetch(
                 `${API_URL}/api/expenses/${kitchenId}/expenses/${expenseId}`,
                 {
@@ -84,8 +79,6 @@ export const deleteExpense = createAsyncThunk(
     async ({ kitchenId, expenseId }, { rejectWithValue }) => {
         const token = await getToken();
         try {
-            console.log('deleting expenseId', expenseId)
-            console.log('from kitchenId', kitchenId)
             const res = await fetch(
                 `${API_URL}/api/expenses/${kitchenId}/expenses/${expenseId}`,
                 {
@@ -94,7 +87,6 @@ export const deleteExpense = createAsyncThunk(
                 }
             );
             const data = await res.json();
-            console.log('deleted expenses', data)
             return { expenseId, balances: data.balances }; // Return ID + updated balances
         } catch (err) {
             return rejectWithValue(err.message);
@@ -163,7 +155,6 @@ const expensesSlice = createSlice({
 
             // Delete expense
             .addCase(deleteExpense.fulfilled, (state, action) => {
-                console.log('removing expense with in slice', action.payload)
                 state.expenses = state.expenses.filter(
                     (e) => e._id !== action.payload.expenseId
                 );

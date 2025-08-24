@@ -23,7 +23,6 @@ export default function ListRecipes({ recipes, fetchMore }) {
   };
 
   const handleEndReached = () => {
-    console.log("End reached, fetching more recipes...");
     fetchMore();
   };
 

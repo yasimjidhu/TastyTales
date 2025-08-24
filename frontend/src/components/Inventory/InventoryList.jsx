@@ -2,18 +2,18 @@ import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 
 const InventoryList = ({ inventory, showAddItem }) => {
-  const lowStockItems = inventory.filter(item => item.lowStock);
+  const lowStockItems = inventory && inventory.length > 0 && inventory?.filter(item => item.isLowStock) ? inventory?.filter((item) => item?.isLowStock) : [];
 
   const renderItem = ({ item }) => (
     <View
       style={[
         styles.itemBox,
-        item.lowStock ? styles.lowStockBorder : styles.inStockBorder,
+        item.isLowStock ? styles.lowStockBorder : styles.inStockBorder,
       ]}
     >
       <View style={styles.itemHeader}>
         <Text style={styles.itemName}>{item.name}</Text>
-        {item.lowStock && <Text style={styles.alertIcon}>⚠️</Text>}
+        {item.isLowStock && <Text style={styles.alertIcon}>⚠️</Text>}
       </View>
       <View style={styles.itemDetails}>
         <Text style={styles.detailLine}>
@@ -24,7 +24,7 @@ const InventoryList = ({ inventory, showAddItem }) => {
         </Text>
         <View style={styles.statusRow}>
           <Text>Status: </Text>
-          {item.lowStock ? (
+          {item.isLowStock ? (
             <Text style={styles.lowStockText}>Low Stock</Text>
           ) : (
             <Text style={styles.inStockText}>In Stock</Text>

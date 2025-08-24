@@ -48,7 +48,6 @@ const CookingStepsScreen = ({ route, navigation }) => {
   };
 
   const handlePhotoTaken = (stepIndex, source) => {
-    console.log(`Photo taken for step ${stepIndex} from ${source}`);
     // Handle photo logic here
   };
 
@@ -57,11 +56,9 @@ const CookingStepsScreen = ({ route, navigation }) => {
       ...prev,
       [stepIndex]: isCompleted,
     }));
-    console.log(`Step ${stepIndex} completion status: ${isCompleted}`);
   };
 
   const handleFinishRecipe = () => {
-    console.log("Recipe finished:", recipe.title);
     dispatch(addMadeItRecipe(recipe?._id));
     navigation.goBack();
   };

@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { useSelector } from "react-redux";
 
 const MemberList = ({
@@ -9,8 +9,8 @@ const MemberList = ({
   schedule = [],
   balances = {},
 }) => {
-  
-  const { user } = useSelector(state => state.user)
+  const { user } = useSelector((state) => state.user);
+  const [loading, setLoading] = useState(false);
 
   const renderMember = ({ item: member }) => {
     const balance = balances[member.userId] || 0;
@@ -29,11 +29,30 @@ const MemberList = ({
     return (
       <View key={member._id} style={styles.memberCard}>
         <View style={styles.headerRow}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {member?.userName?.charAt(0)?.toUpperCase() || "?"}
-            </Text>
+          <View style={styles.avatarWrapper}>
+            {member.userImage ? (
+              <>
+                <Image
+                  source={{ uri: member.userImage }}
+                  style={styles.avatarImage}
+                  onLoadStart={() => setLoading(true)}
+                  onLoadEnd={() => setLoading(false)}
+                />
+                {loading && (
+                  <View style={styles.avatarLoader}>
+                    <ActivityIndicator size="small" color="#14b8a6" />
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarText}>
+                  {member?.userName?.charAt(0)?.toUpperCase() || "?"}
+                </Text>
+              </View>
+            )}
           </View>
+
           <View style={styles.nameAndBalance}>
             <Text style={styles.memberName}>{member?.userName}</Text>
             <Text style={[styles.balanceText, balanceStyle]}>
@@ -41,9 +60,9 @@ const MemberList = ({
             </Text>
           </View>
         </View>
-        
+
         <View style={styles.divider} />
-        
+
         <View style={styles.statsSection}>
           <View style={styles.statItem}>
             <View style={styles.statIconContainer}>
@@ -53,8 +72,9 @@ const MemberList = ({
               <Text style={styles.statLabel}>Items Added</Text>
               <Text style={styles.statValue}>
                 {
-                  inventory.filter(
-                    (i) => i.addedBy === member._id || i.addedBy === member.userId
+                  inventory&& inventory.length > 0 && inventory?.filter(
+                    (i) =>
+                      i.addedBy === member.user?.name
                   ).length
                 }
               </Text>
@@ -68,13 +88,15 @@ const MemberList = ({
             <View style={styles.statContent}>
               <Text style={styles.statLabel}>Expenses Paid</Text>
               <Text style={styles.statValue}>
-                ₹{expenses
+                ₹
+                {expenses
                   .filter((e) => e.paidBy === member.userId)
                   .reduce((sum, e) => sum + e.amount, 0)
                   .toFixed(0)}
               </Text>
               <Text style={styles.statSubtext}>
-                {expenses.filter((e) => e.paidBy === member.userId).length} transactions
+                {expenses.filter((e) => e.paidBy === member.userId).length}{" "}
+                transactions
               </Text>
             </View>
           </View>
@@ -106,7 +128,7 @@ const MemberList = ({
           <Text style={styles.memberCountText}>{members.length}</Text>
         </View>
       </View>
-      
+
       <FlatList
         data={members}
         keyExtractor={(item) => item._id}
@@ -125,19 +147,19 @@ const MemberList = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: 'white',
+    backgroundColor: "white",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -146,10 +168,10 @@ const styles = StyleSheet.create({
   headerIconContainer: {
     width: 32,
     height: 32,
-    backgroundColor: '#14b8a6',
+    backgroundColor: "white",
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   headerIcon: {
@@ -162,14 +184,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   memberCount: {
-    backgroundColor: '#14b8a6',
+    backgroundColor: "#14b8a6",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   memberCountText: {
-    color: 'white',
-    fontWeight: '600',
+    color: "white",
+    fontWeight: "600",
     fontSize: 12,
   },
   listContent: {
@@ -185,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flex: 1,
     marginHorizontal: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
@@ -196,7 +218,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  avatar: {
+  avatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  avatarFallback: {
     width: 36,
     height: 36,
     backgroundColor: "#14b8a6",
@@ -221,7 +249,7 @@ const styles = StyleSheet.create({
   },
   balanceText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   balancePositive: {
     color: "#14b8a6",
@@ -234,23 +262,23 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: "#e5e7eb",
     marginBottom: 12,
   },
   statsSection: {
     gap: 8,
   },
   statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   statIconContainer: {
     width: 24,
     height: 24,
-    backgroundColor: '#f0fdfa',
+    backgroundColor: "#f0fdfa",
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 8,
   },
   statIcon: {
@@ -262,7 +290,7 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     color: "#6b7280",
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 1,
   },
   statValue: {
@@ -274,6 +302,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#9ca3af",
     marginTop: 1,
+  },
+  avatarWrapper: {
+    width: 36,
+    height: 36,
+    marginRight: 10,
+    position: "relative",
+  },
+  avatarLoader: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.4)", 
+    borderRadius: 18,
   },
 });
 

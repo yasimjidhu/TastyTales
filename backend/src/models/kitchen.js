@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const memberSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   userName: { type: String, required: true },  // store username directly
+  userImage: { type: String, default: "" }, // store user image URL
   role: { type: String, enum: ["admin", "member"], default: "member" }
 });
 

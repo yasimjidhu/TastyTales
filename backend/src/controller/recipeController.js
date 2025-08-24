@@ -175,12 +175,10 @@ const saveOrUnsave = async (req, res) => {
         let updated;
 
         if (user.savedRecipes.includes(recipeId)) {
-            console.log('already is there in saved recipes of the user')
             user.savedRecipes = user.savedRecipes.filter(id => id.toString() !== recipeId);
             recipe.savesCount = Math.max(0, recipe.savesCount - 1)
             updated = false
         } else {
-            console.log('not found in already , so adding')
             user.savedRecipes.push(recipeId);
             recipe.savesCount += 1
             updated = true
@@ -190,9 +188,6 @@ const saveOrUnsave = async (req, res) => {
         await recipe.save()
 
         const updatedUser = await User.findById(userId).populate("savedRecipes");
-
-        console.log('saved', updated)
-        console.log('savesCount', recipe.savesCount)
 
         return res.json({ message: "Updated", savedRecipes: updatedUser.savedRecipes, saved: updated, savesCount: recipe.savesCount });
 
@@ -300,7 +295,6 @@ const markAsMadeIt = async (req, res) => {
 }
 
 const getMadeItRecipes = async (req, res) => {
-    console.log('getmadeit recipes in controller',req.params.userId)
     const userId = req.params.userId || req.user._id;
     try {
         const result = await User.aggregate([
@@ -319,9 +313,7 @@ const getMadeItRecipes = async (req, res) => {
                 }
             }
         ]);
-        console.log('result in made it recipes', result)
 
-        console.log('made it recipes', result[0].madeItRecipes)
         res.json(result[0].madeItRecipes);
     } catch (error) {
         res.status(500).json({ error: "Failed to retrieve made recipes" });

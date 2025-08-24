@@ -23,7 +23,6 @@ const sendPushNotifications = async (expoToken, title, body) => {
     });
 
     const data = await response.json();
-    console.log('✅ Push notification response:', data);
     return data;
   } catch (err) {
     console.error('❌ Failed to send push notification:', err);

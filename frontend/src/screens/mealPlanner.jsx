@@ -58,7 +58,6 @@ const MealPlanner = () => {
           meals: localPlan,
         })
       );
-      console.log("✅ Meal plan saved:", result);
     } catch (error) {
       console.error("❌ Error saving meal plan:", error);
     }

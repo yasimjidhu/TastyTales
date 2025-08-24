@@ -9,7 +9,6 @@ export const fetchNotifications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = await AsyncStorage.getItem("token");
     try {
-        console.log('fetch notificatoin called in slice')
       const res = await fetch(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -28,7 +27,6 @@ export const updateExpoToken = createAsyncThunk(
   "notifications/updateExpoToken",
   async (expoToken, { rejectWithValue }) => {
     try {
-      console.log('update expo token called',expoToken)
       const token = await AsyncStorage.getItem("token");
       const res = await fetch(`${API_URL}/api/users/update-expo-token`, {
         method: "PUT",

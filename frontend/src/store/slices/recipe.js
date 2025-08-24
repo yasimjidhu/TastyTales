@@ -127,7 +127,6 @@ export const searchRecipes = createAsyncThunk(
   'recipes/searchRecipes',
   async ({ query, category = '', page = 1 }, { rejectWithValue }) => {
     try {
-      console.log('Searching for recipes:', query, 'Category:', category, 'Page:', page);
       const response = await fetch(`${API_URL}/api/recipes/search?q=${query}&category=${category}&page=${page}&limit=10`);
       if (!response.ok) {
         const errorData = await response.json();
@@ -145,7 +144,6 @@ export const fetchWeekRecipes = createAsyncThunk(
   "recipes/fetchWeekRecipes",
   async (_, { rejectWithValue }) => {
     try {
-      console.log('fetch week recipes called')
       const response = await fetch(`${API_URL}/api/recipes/week`);
       if (!response.ok) {
         const errorData = await response.json();
@@ -163,7 +161,6 @@ export const fetchWeekRecipes = createAsyncThunk(
 export const fetchMadeItRecipes = createAsyncThunk(
   "recipes/fetchMadeItRecipes",
   async (userId, { rejectWithValue }) => {
-    console.log('fetching made it recipes for user:', userId);
     const token = await AsyncStorage.getItem('token');
     try {
       const response = await fetch(`${API_URL}/api/recipes/made-it/${userId}`, {
@@ -178,7 +175,6 @@ export const fetchMadeItRecipes = createAsyncThunk(
         return rejectWithValue(errorData.error || "Failed to fetch Made It recipes");
       }
       const data = await response.json();
-      console.log('Made It recipes fetched:', data);
       return data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch Made It recipes");
@@ -243,7 +239,6 @@ export const fetchSavedRecipes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = await AsyncStorage.getItem("token");
     try {
-      console.log('fetch saved recipes called')
       const response = await fetch(`${API_URL}/api/recipes/saved`, {
         method: "GET",
         headers: {

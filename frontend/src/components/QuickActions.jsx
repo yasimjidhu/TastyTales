@@ -49,7 +49,6 @@ const QuickActionsComponent = ({
                 { 
                     text: "Camera", 
                     onPress: () => {
-                        console.log(`Opening camera for step ${stepIndex + 1}`);
                         // Here you would integrate with react-native-image-picker
                         Alert.alert("Camera", "Camera functionality would open here");
                         
@@ -61,7 +60,6 @@ const QuickActionsComponent = ({
                 { 
                     text: "Gallery", 
                     onPress: () => {
-                        console.log(`Opening gallery for step ${stepIndex + 1}`);
                         Alert.alert("Gallery", "Gallery functionality would open here");
                         
                         if (onPhotoTaken) {

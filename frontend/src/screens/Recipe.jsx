@@ -53,7 +53,6 @@ export default function Recipe({ navigation }) {
   const recipe = useSelector((state) =>
     state.recipes.recipes.find((r) => r._id == recipeId)
   );
-  console.log('recipe in recipe page',recipe?.authorId)
   const { user, loading, error } = useSelector((state) => state.user);
   const { savedRecipes, popularRecipes } = useSelector(
     (state) => state.recipes

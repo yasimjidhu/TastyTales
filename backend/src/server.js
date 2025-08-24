@@ -9,6 +9,7 @@ const mealPlanRoutes = require('../src/routes/mealPlanRoutes')
 const inventoryRoutes = require('../src/routes/inventoryRoutes')
 const kitchenRoutes = require('../src/routes/kitchenRoutes')
 const expenseRoutes = require('../src/routes/expenseRoutes')
+const scheduleRoutes = require('../src/routes/scheduleRoutes')
 const categoryRoutes = require('../src/routes/categoryRoutes')
 const notificationRoutes = require('../src/routes/notificationRoutes')
 
@@ -32,6 +33,7 @@ app.use('/api/expenses',expenseRoutes)
 app.use('/api/mealPlan',mealPlanRoutes)
 app.use("/api/inventory", inventoryRoutes)
 app.use("/api/kitchens", kitchenRoutes)
+app.use("/api/schedules", scheduleRoutes)
 app.use("/api/notifications",notificationRoutes)
 
 // Start the Server

@@ -1,7 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 
-const ScheduleList = ({ schedule, showAddSchedule }) => {
+const ScheduleList = ({ schedule, showAddSchedule,members=[] }) => {
+
+  const getUserName = (userId) => {
+    const member = members.find(m => m.userId === userId);
+    return member ? member.userName : 'Unknown';
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.scheduleItem}>
       <View style={styles.scheduleHeader}>
@@ -14,7 +20,7 @@ const ScheduleList = ({ schedule, showAddSchedule }) => {
         </View>
         <View style={styles.timeSection}>
           <Text style={styles.cookText}>
-            Cook: <Text style={styles.cookName}>{item.cook}</Text>
+            Cook: <Text style={styles.cookName}>{getUserName(item.cook).toUpperCase()}</Text>
           </Text>
           <View style={styles.timeRow}>
             <Text style={styles.clockIcon}>⏰</Text>

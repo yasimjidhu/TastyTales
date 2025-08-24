@@ -24,7 +24,6 @@ const register = async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         await user.save();
-        console.log("User registered successfully:", user);
         res.status(201).json({ user,token, message: "User registered successfully!" });
     } catch (error) {
         console.error("Error during registration:", error);
@@ -64,7 +63,6 @@ const login = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     const { userId } = req.params;
-    console.log('get user called in backend', userId)
     try {
         const user = await User.findById(userId).select("-password").lean();
         if (!user) return res.status(404).json({ error: "User not found" });
@@ -90,7 +88,6 @@ const updateProfileImage = async (req, res) => {
         const user = await User.findByIdAndUpdate(userId, { image: imageUri }, { new: true }).select("-password");
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        console.log('updated user with image', user)
         res.json({ message: "Profile image updated successfully", user });
     } catch (error) {
         console.error("Error updating profile image:", error);
@@ -198,17 +195,14 @@ const updateExpoToken = async (req, res) => {
     const userId = req.user._id
     const { expoToken } = req.body
 
-    console.log('expo token in backend', expoToken)
     if (!expoToken) return res.status(400).json({ message: "expoToken is required" })
 
     await User.findByIdAndUpdate(userId, { expoToken }, { new: true })
-    console.log('expo token updated')
     res.status(200).json({ message: "Expo push token updated successfully" })
 }
 
 const submitPreferences = async (req, res) => {
     try {
-        console.log("Submitting preferences in controller:", req.body);
         const userId = req.user._id;
         const { foodType, lifestyle, skill, cuisines, allergies, healthGoals } = req.body;
 
@@ -229,7 +223,6 @@ const submitPreferences = async (req, res) => {
         user.preferencesCompleted = true;
         await user.save();
 
-        console.log("Preferences updated successfully:", user);
         res.status(200).json({
             message: "Preferences updated successfully",
             user,

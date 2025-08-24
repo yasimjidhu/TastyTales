@@ -8,7 +8,7 @@ import kitchenReducer from '../store/slices/kitchen'
 import inventoryReducer from '../store/slices/inventory'
 import notificationReducer from '../store/slices/notification'
 
-import {persistedRecipeReducer,persistedGroceryReducer,persistedKitchenReducer,persistedExpenseReducer} from './persist'
+import {persistedRecipeReducer,persistedGroceryReducer,persistedKitchenReducer,persistedExpenseReducer,persistedScheduleReducer} from './persist'
 
 const store = configureStore({
   reducer: {
@@ -20,6 +20,7 @@ const store = configureStore({
     kitchen: persistedKitchenReducer,
     inventory:inventoryReducer,
     expenses:persistedExpenseReducer,
+    schedule:persistedScheduleReducer,
   },
   middleware:(getDefaultMiddleware)=>
     getDefaultMiddleware({

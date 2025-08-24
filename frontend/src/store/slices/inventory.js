@@ -10,12 +10,10 @@ const getToken = async () => await AsyncStorage.getItem("token");
 // Fetch all inventory items
 export const fetchInventory = createAsyncThunk(
   "inventory/fetchInventory",
-  async (_, { getState, rejectWithValue }) => {
+  async (kitchenId, { getState, rejectWithValue }) => {
     const token = await getToken();
-    const kitchenId = getState().kitchen?.kitchenId;
 
     try {
-        console.log('fetching inventory for kitchenId',kitchenId)
       const res = await fetch(`${API_URL}/api/inventory/${kitchenId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -35,7 +33,7 @@ export const addInventoryItem = createAsyncThunk(
   "inventory/addItem",
   async (item, { getState, rejectWithValue }) => {
     const token = await getToken();
-    const kitchenId = getState().kitchen?.kitchenId; // 👈 get kitchenId from Redux
+    const kitchenId = getState().kitchen?.kitchen?._id;
 
     try {
       const res = await fetch(`${API_URL}/api/inventory/item`, {
@@ -60,7 +58,6 @@ export const updateInventoryItem = createAsyncThunk(
   "inventory/updateItem",
   async ({ itemId, updates }, { rejectWithValue }) => {
       const token = await getToken();
-      console.log('got updateinventoryitem thunk',itemId, updates)
     try {
       const res = await fetch(`${API_URL}/api/inventory/item/${itemId}`, {
         method: "PATCH",
@@ -113,7 +110,6 @@ const inventorySlice = createSlice({
       })
       .addCase(fetchInventory.fulfilled, (state, action) => {
         state.loading = false;
-        console.log('fetched inventory in thunk:', action.payload);
         state.items = action.payload || [];
       })
       .addCase(fetchInventory.rejected, (state, action) => {
@@ -122,7 +118,6 @@ const inventorySlice = createSlice({
       })
       // Add
       .addCase(addInventoryItem.fulfilled, (state, action) => {
-        console.log('New item added in thunk:', action.payload);
         state.items.push(action.payload); // since backend returns newItem
       })
       // Update

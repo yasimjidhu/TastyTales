@@ -52,7 +52,6 @@ const addGroceryItem = async (req, res) => {
     }
 
     await list.save();
-    console.log('saved list',list)
     res.status(201).json(list);
   } catch (err) {
     console.error("Error in addGroceryItem:", err.message);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { View, Modal, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchExpenses,
@@ -14,6 +15,7 @@ import CustomAlert from "../components/Alert";
 
 const ExpensesPage = () => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [alertConfig, setAlertConfig] = useState({
     visible: false,
@@ -24,14 +26,12 @@ const ExpensesPage = () => {
   });
 
   const dispatch = useDispatch();
-  const kitchenId = useSelector((state) => state.kitchen?.kitchenId);
+  const { user } = useSelector((state) => state.user);
+  const {_id:kitchenId} = useSelector((state) => state.kitchen?.kitchen);
   const members = useSelector((state) => state.kitchen?.members);
-
   const expenses = useSelector((state) => state.expenses?.expenses);
   const balances = useSelector((state) => state.expenses?.balances);
-  console.log('balances',balances)
 
-  // ✅ Fetch data only when kitchenId changes
   useEffect(() => {
     if (kitchenId) {
       dispatch(fetchExpenses(kitchenId));
@@ -39,10 +39,8 @@ const ExpensesPage = () => {
     }
   }, [kitchenId, dispatch]);
 
-
   const handleAddExpense = (newExpense) => {
     if (editingExpense) {
-      console.log("updating expense", newExpense);
       dispatch(
         updateExpense({
           kitchenId,
@@ -93,7 +91,40 @@ const ExpensesPage = () => {
         onEditExpense={handleEditExpense}
         onDeleteExpense={handleDeleteExpense}
       />
-      <BalanceSummary members={members} balances={balances} />
+
+      {/* Small Button to show Balance Summary */}
+      <TouchableOpacity
+        style={styles.balanceButton}
+        onPress={() => setShowBalanceModal(true)}
+      >
+        <Text style={styles.balanceButtonText}>View Balances</Text>
+      </TouchableOpacity>
+
+      {/* Popup Modal */}
+      <Modal
+        visible={showBalanceModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowBalanceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Balances</Text>
+            <BalanceSummary
+              members={members}
+              balances={balances}
+              currentUserId={user?._id}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowBalanceModal(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <AddExpenseModal
         show={showExpenseModal}
         onClose={() => {
@@ -104,6 +135,7 @@ const ExpensesPage = () => {
         onAddExpense={handleAddExpense}
         editingExpense={editingExpense}
       />
+
       <CustomAlert
         visible={alertConfig.visible}
         title={alertConfig.title}
@@ -115,5 +147,50 @@ const ExpensesPage = () => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  balanceButton: {
+    backgroundColor: "teal",
+    padding: 14,
+    margin: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20
+  },
+  balanceButtonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  closeButton: {
+    backgroundColor: "gray",
+    padding: 10,
+    borderRadius: 6,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+});
 
 export default ExpensesPage;

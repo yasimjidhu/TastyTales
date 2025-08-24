@@ -25,7 +25,6 @@ const NotificationRegistrar = () => {
       if (!user) return;
 
       const token = await registerForPushNotificationsAsync()
-      console.log('token got while registering', token)
       if (token) {
         dispatch(updateExpoToken(token))
       }

@@ -1,6 +1,13 @@
 // screens/JoinKitchenScreen.js
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { joinKitchen } from "../store/slices/kitchen";
 
@@ -8,9 +15,8 @@ const JoinKitchenScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const [inviteCode, setInviteCode] = useState("");
 
-  const {kitchenId,kitchen} = useSelector((state)=>state.kitchen)
+  const { _id: kitchenId } = useSelector((state) => state.kitchen?.kitchen);
 
-  console.log('route params',route.params)
   // Auto-fill if opened via deep link
   useEffect(() => {
     if (route.params?.inviteCode) {
@@ -25,7 +31,7 @@ const JoinKitchenScreen = ({ navigation, route }) => {
     }
 
     try {
-      await dispatch(joinKitchen({kitchenId,inviteCode})).unwrap();
+      await dispatch(joinKitchen({ kitchenId, inviteCode })).unwrap();
       Alert.alert("Success", "You have joined the kitchen!");
       navigation.replace("KitchenHome");
     } catch (err) {
@@ -54,9 +60,27 @@ const JoinKitchenScreen = ({ navigation, route }) => {
 export default JoinKitchenScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, width: "100%", marginBottom: 15 },
-  button: { backgroundColor: "#3B82F6", padding: 15, borderRadius: 8, width: "100%", alignItems: "center" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    width: "100%",
+    marginBottom: 15,
+  },
+  button: {
+    backgroundColor: "#3B82F6",
+    padding: 15,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+  },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });

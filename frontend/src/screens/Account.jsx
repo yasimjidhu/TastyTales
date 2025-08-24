@@ -51,7 +51,6 @@ export default function Account({ navigation }) {
     (state) => state.recipes
   );
   const dispatch = useDispatch();
-  console.log('user in account',user)
 
   useEffect(() => {
     dispatch(getUserProfile(user?._id));
@@ -182,7 +181,6 @@ export default function Account({ navigation }) {
   };
 
   const getActiveData = () => {
-    console.log("active user");
     switch (activeTab) {
       case "posts":
         return madeIt || [];

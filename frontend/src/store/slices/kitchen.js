@@ -14,7 +14,6 @@ export const createKitchen = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     const token = await getToken();
     try {
-      console.log('Creating kitchen with payload:', payload)
       const res = await fetch(`${API_URL}/api/kitchens`, {
         method: "POST",
         headers: {
@@ -90,6 +89,7 @@ const kitchenSlice = createSlice({
     clearKitchen: (state) => {
       state.kitchen = null;
       state.members = [];
+      state.kitchenId = null;
       state.error = null;
     },
   },
@@ -106,7 +106,6 @@ const kitchenSlice = createSlice({
         state.members = action.payload.members;
       })
       .addCase(createKitchen.rejected, (state, action) => {
-        console.log('Create kitchen failed:', action.payload);
         state.loading = false;
         state.error = action.payload;
       })
@@ -130,8 +129,10 @@ const kitchenSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchKitchen.fulfilled, (state, action) => {
+        console.log('fetchkitchen payload ',action.payload)
         state.loading = false;
         state.kitchen = action.payload;
+        state.kitchenId = action.payload._id;
         state.members = action.payload.members;
       })
       .addCase(fetchKitchen.rejected, (state, action) => {

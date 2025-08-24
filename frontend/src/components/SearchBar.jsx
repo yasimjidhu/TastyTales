@@ -14,10 +14,8 @@ export default function SearchBar({ text }) {
     const delayDebounce = setTimeout(() => {
       if (searchText.trim().length > 0) {
         dispatch(searchRecipes({ query: searchText }));
-        console.log("Searching for recipes:", searchText);
       } else {
         dispatch(clearSearchResults());
-        console.log("Cleared search, showing all recipes");
       }
     }, 500);
 
@@ -30,7 +28,6 @@ export default function SearchBar({ text }) {
 
   const handleSearchRecipes = () => {
     dispatch(searchRecipes({ searchText }));
-    console.log("Searching for recipes:", searchText);
   };
 
   useEffect(() => {}, [searchText]);

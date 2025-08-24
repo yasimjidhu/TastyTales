@@ -47,6 +47,7 @@ export const login = createAsyncThunk(
       }
 
       const data = await response.json();
+      console.log('Login successful, received data:', data);
       if (!data.token) {
         return rejectWithValue('No token received from server');
       }
@@ -76,7 +77,6 @@ export const register = createAsyncThunk(
       }
 
       const data = await response.json();
-      console.log('Register response:', data);
       if (!data.token) {
         return rejectWithValue('No token received from server');
       }
@@ -108,7 +108,6 @@ export const submitPreferences = createAsyncThunk(
         return rejectWithValue(err?.error || "Failed to save preferences");
       }
       const data = await res.json();
-      console.log("Preferences saved successfully:", data);
       return data;
     } catch (e) {
       return rejectWithValue(e.message || "Something went wrong");
@@ -177,7 +176,6 @@ export const likeOrUnlikeRecipe = createAsyncThunk(
     const token = await AsyncStorage.getItem('token');
 
     try {
-      console.log('like or unlike alled in slice', recipeId)
       const response = await fetch(`${API_URL}/api/recipes/${recipeId}/like`, {
         method: 'POST',
         headers: {
@@ -268,7 +266,6 @@ const userSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        console.log('register fulfilled in slice payload', action.payload);
         state.user = action.payload.user;
       })
       .addCase(register.rejected, (state, action) => {
@@ -290,18 +287,15 @@ const userSlice = createSlice({
       })
       .addCase(updateUserProfileImage.pending, (state) => {
         state.imageUploading = true;
-        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.error = null;
       })
       .addCase(updateUserProfileImage.fulfilled, (state, action) => {
-        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.imageUploading = false;
         if (state.user) {
           state.user.image = action.payload.user.image; // Update profile image in user state
         }
       })
       .addCase(updateUserProfileImage.rejected, (state, action) => {
-        console.log('update user profile image called in slice in reducer', state.imageUploading)
         state.imageUploading = false;
         state.error = action.payload;
       })

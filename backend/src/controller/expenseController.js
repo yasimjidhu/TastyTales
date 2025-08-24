@@ -18,7 +18,6 @@ exports.getExpenses = async (req, res) => {
 
 exports.addExpense = async (req, res) => {
   try {
-    console.log('addexpense reachein backend',req.body)
     const { item, amount, paidBy, splitBetween } = req.body;
     const { kitchenId } = req.params;
 
@@ -28,13 +27,10 @@ exports.addExpense = async (req, res) => {
     const expense = new Expense({ item, amount, paidBy, splitBetween });
     await expense.save();
 
-    console.log('expense saved',expense)
     kitchen.expenses.push(expense._id);
 
     // update balances
     const perPerson = amount / splitBetween.length;
-
-    console.log('perPerson',perPerson)
 
     splitBetween.forEach(member => {
       kitchen.balances.set(member, (kitchen.balances.get(member) || 0) - perPerson);
@@ -43,7 +39,6 @@ exports.addExpense = async (req, res) => {
 
     await kitchen.save();
 
-    console.log('kitchen updated with new expense and balances',kitchen)
 
     res.status(201).json({ expense, balances: kitchen.balances });
   } catch (err) {
@@ -55,7 +50,6 @@ exports.updateExpense = async (req, res) => {
   try {
     const { kitchenId, expenseId } = req.params;
     const { item, amount, paidBy, splitBetween,date } = req.body;
-    console.log('updateExpense reached in backend',req.body)
 
     const kitchen = await Kitchen.findById(kitchenId);
     if (!kitchen) return res.status(404).json({ error: "Kitchen not found" });
@@ -87,7 +81,6 @@ exports.updateExpense = async (req, res) => {
 
     await kitchen.save();
 
-    console.log('expense updated',expense)
     res.json({ expense, balances: kitchen.balances });
   } catch (err) {
     console.error('Error updating expense:', err);
@@ -99,8 +92,6 @@ exports.updateExpense = async (req, res) => {
 exports.deleteExpense = async (req, res) => {
   try {
     const { expenseId } = req.params;
-
-    console.log('deleteExpense reached in backend', expenseId);
 
     const expense = await Expense.findById(expenseId);
     if (!expense) return res.status(404).json({ error: "Expense not found" });
@@ -126,7 +117,6 @@ exports.deleteExpense = async (req, res) => {
     // Delete expense document
     await expense.deleteOne();
 
-    console.log('expense deleted', expenseId);
     res.json({ message: "Expense deleted successfully", balances: kitchen.balances, expenseId });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -12,7 +12,7 @@ import ExpensesScreen from "./Expenses";
 import ScheduleScreen from "./Schedule";
 import MembersScreen from "./Members";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchKitchen } from "../store/slices/kitchen";
+import { clearKitchen, fetchKitchen } from "../store/slices/kitchen";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -20,15 +20,17 @@ const KitchenHomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const { loading, kitchen, kitchenId } = useSelector((state) => state.kitchen);
+  const { loading, kitchen } = useSelector((state) => state.kitchen);
+  const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (kitchenId && !kitchen) {
-      dispatch(fetchKitchen(kitchenId));
-    }
-  }, [kitchenId, kitchen, dispatch]);
+    if (!user?.kitchen) return; // Case 2: user has no kitchen → do nothing
 
-  console.log("kitchen data", kitchen);
+    // Case 1: user has kitchen, but it's not in store or mismatched
+    if (!kitchen || kitchen._id !== user.kitchen) {
+      dispatch(fetchKitchen(user.kitchen));
+    }
+  }, [user?.kitchen, kitchen, dispatch]);
 
   return (
     <View style={styles.container}>
@@ -45,7 +47,6 @@ const KitchenHomeScreen = () => {
             );
 
             // Copy to clipboard
-            console.log("created invitelink", inviteLink);
             await Clipboard.setStringAsync(inviteLink);
 
             // Optionally alert the user

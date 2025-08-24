@@ -1,33 +1,64 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 
-const BalanceSummary = ({ members = [], balances = [] }) => {
+const BalanceSummary = ({
+  members = [],
+  balances = {},
+  currentUserId = null,
+}) => {
   return (
     <View style={styles.bg}>
-      <Text style={styles.title}>Current Balances</Text>
+      <Text style={styles.title}>💰 Current Balances</Text>
       <View style={styles.grid}>
-        {members &&
-          members.length > 0 &&
-          members.map((member) => {
-            const balance = balances[member.userId] || 0;
-            let balanceStyle = styles.balanceNeutral;
-            if (balance > 0) balanceStyle = styles.balancePositive;
-            else if (balance < 0) balanceStyle = styles.balanceNegative;
+        {members.map((member) => {
+          const balance = balances[member.userId] || 0;
+          const isCurrentUser = member.userId === currentUserId;
 
-            return (
-              <View key={member?._id} style={styles.memberCard}>
-                <Text style={styles.name}>{member?.userName}</Text>
-                <Text style={[styles.balance, balanceStyle]}>
-                  ₹{Math.abs(balance).toFixed(0)}
-                  {balance > 0
-                    ? " to receive"
-                    : balance < 0
-                    ? " to pay"
-                    : " settled up"}
-                </Text>
+          let balanceText = "Settled up";
+          let pillStyle = styles.balanceNeutralPill;
+          if (balance > 0) {
+            balanceText = `₹${Math.abs(balance).toFixed(0)} to receive`;
+            pillStyle = styles.balancePositivePill;
+          } else if (balance < 0) {
+            balanceText = `₹${Math.abs(balance).toFixed(0)} to pay`;
+            pillStyle = styles.balanceNegativePill;
+          }
+
+          return (
+            <View
+              key={member?._id}
+              style={[
+                styles.memberCard,
+                isCurrentUser && styles.currentUserHighlight,
+              ]}
+            >
+              {/* Avatar */}
+              {member.avatarUrl ? (
+                <Image
+                  source={{ uri: member.avatarUrl }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarInitial}>
+                    {member.userName?.[0]?.toUpperCase() || "?"}
+                  </Text>
+                </View>
+              )}
+
+              {/* Name */}
+              <Text style={styles.name}>
+                {member?.userName}
+                {isCurrentUser && " (You)"}
+              </Text>
+
+              {/* Balance pill */}
+              <View style={[styles.balancePill, pillStyle]}>
+                <Text style={styles.balanceText}>{balanceText}</Text>
               </View>
-            );
-          })}
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -35,52 +66,91 @@ const BalanceSummary = ({ members = [], balances = [] }) => {
 
 const styles = StyleSheet.create({
   bg: {
-    backgroundColor: "#f0fdfb", // soft blue/green gradient substitute
+    backgroundColor: "#f0fdfb",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     margin: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   title: {
-    fontWeight: "600",
-    color: "#22223b",
-    marginBottom: 12,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: 16,
     fontSize: 18,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
+    rowGap: 16,
   },
   memberCard: {
-    width: "48%", // for 2 columns; adjust for more
-    minWidth: 120,
-    alignItems: "center",
-    marginBottom: 10,
+    width: "48%",
     backgroundColor: "white",
-    padding: 10,
-    borderRadius: 8,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: "#edf2f7",
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  currentUserHighlight: {
+    borderColor: "#38bdf8", // cyan border for current user
+    borderWidth: 2,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginBottom: 8,
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#bae6fd", // soft blue
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  avatarInitial: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#0369a1",
   },
   name: {
-    fontWeight: "500",
-    color: "#22223b",
-    marginBottom: 6,
+    fontWeight: "600",
+    color: "#1e293b",
     fontSize: 15,
+    marginBottom: 6,
+    textAlign: "center",
   },
-  balance: {
-    fontSize: 17,
-    fontWeight: "bold",
+  balancePill: {
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
   },
-  balancePositive: {
-    color: "#16a34a", // green-600
+  balanceText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "white",
   },
-  balanceNegative: {
-    color: "#dc2626", // red-600
+  balancePositivePill: {
+    backgroundColor: "#16a34a",
   },
-  balanceNeutral: {
-    color: "#64748b", // gray-600
+  balanceNegativePill: {
+    backgroundColor: "#dc2626",
+  },
+  balanceNeutralPill: {
+    backgroundColor: "#64748b",
   },
 });
 

@@ -182,8 +182,6 @@ export default function PreferenceWizard({ navigation }) {
 
       const response = await dispatch(submitPreferences(payload)).unwrap();
 
-      console.log("Preferences submitted successfully in page", response);
-
       setLoading(false);
     } catch (e) {
       setLoading(false);

@@ -45,7 +45,6 @@ const markAllAsRead = async (req, res) => {
       { recipient: req.user._id, read: false },
       { $set: { read: true } }
     );
-    console.log('all notification marked as read')
     res.status(200).json({ message: "All notifications marked as read" });
   } catch (err) {
     console.error(err);

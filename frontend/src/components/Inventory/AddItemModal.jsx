@@ -6,9 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Switch,
-  FlatList,
   StyleSheet,
-  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
@@ -17,15 +15,13 @@ const AddItemModal = ({
   onClose,
   onUpdateItem,
   data,
-  members,
   onAddItem,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
     unit: "",
-    addedBy: "",
-    lowStock: false,
+    isLowStock: false,
     category: "",
   });
 
@@ -45,8 +41,7 @@ const AddItemModal = ({
         name: data.name || "",
         quantity: String(data.quantity || ""),
         unit: data.unit || "",
-        addedBy: data.addedBy || "",
-        lowStock: data.isLowsStock ?? false, // careful: your backend uses `isLowsStock`
+        isLowStock: data.isLowStock ?? false, 
         category: data.category || "",
       });
     } else {
@@ -55,8 +50,7 @@ const AddItemModal = ({
         name: "",
         quantity: "",
         unit: "",
-        addedBy: "",
-        lowStock: false,
+        isLowStock: false,
         category: "",
       });
     }
@@ -79,7 +73,7 @@ const AddItemModal = ({
             onChangeText={(text) => setFormData({ ...formData, name: text })}
           />
           <TextInput
-            placeholder="Quantity (e.g., 2kg, 500ml)"
+            placeholder="Quantity"
             style={styles.input}
             value={formData.quantity}
             onChangeText={(text) =>
@@ -106,48 +100,19 @@ const AddItemModal = ({
               <Picker.Item label="cup" value="cup" />
             </Picker>
           </View>
-          <Text style={styles.label}>Added By</Text>
-          <View style={styles.pickerWrapper}>
-            <FlatList
-              data={members}
-              horizontal
-              keyExtractor={(item) => item._id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.pickerOption,
-                    formData.addedBy === item._id &&
-                      styles.selectedPickerOption,
-                  ]}
-                  onPress={() =>
-                    setFormData({ ...formData, addedBy: item._id })
-                  }
-                >
-                  <Text
-                    style={
-                      formData.addedBy === item._id
-                        ? styles.selectedPickerOptionText
-                        : {}
-                    }
-                  >
-                    {item?.userName || "Unnamed"}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
+
           <View style={styles.switchRow}>
             <Switch
-              value={formData.lowStock}
+              value={formData.isLowStock}
               onValueChange={(val) =>
-                setFormData({ ...formData, lowStock: val })
+                setFormData({ ...formData, isLowStock: val })
               }
             />
             <Text style={{ fontSize: 14, marginLeft: 8 }}>
               Mark as low stock
             </Text>
           </View>
-          {/* Optional: Add a category input if desired */}
+
           <TextInput
             placeholder="Category (optional)"
             style={styles.input}
@@ -163,9 +128,11 @@ const AddItemModal = ({
             <TouchableOpacity
               style={styles.addBtn}
               onPress={handleSubmit}
-              // disabled={!formData.name || !formData.quantity || !formData.addedBy}
+              disabled={!formData.name || !formData.quantity}
             >
-              <Text style={styles.addBtnText}>Add Item</Text>
+              <Text style={styles.addBtnText}>
+                {data?._id ? "Update Item" : "Add Item"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -220,25 +187,6 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-  },
-  pickerWrapper: {
-    flexDirection: "row",
-    marginBottom: 13,
-    gap: 8,
-  },
-  pickerOption: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 7,
-    marginRight: 10,
-  },
-  selectedPickerOption: {
-    backgroundColor: "#60a5fa",
-  },
-  selectedPickerOptionText: {
-    color: "white",
-    fontWeight: "bold",
   },
   switchRow: {
     flexDirection: "row",

@@ -140,12 +140,10 @@ export default function AddRecipeScreen({ navigation }) {
     setIsLoading(true);
 
     try {
-      console.log('uploading image to cloudinary.........!')
       const uploadedImage = recipe.image
         ? await uploadToCloudinary(recipe.image)
         : null;
 
-      console.log('image uploaded')
       const finalRecipeData = {
         ...recipe,
         ingredients: cleanedIngredients,

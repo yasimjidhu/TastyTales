@@ -56,7 +56,7 @@ const AddScheduleModal = ({ show, onClose, members, onAddSchedule }) => {
             >
               <Picker.Item label="Who's cooking?" value="" />
               {members && members.map((member) => (
-                <Picker.Item key={member?._id} label={member?.name} value={member?.name} />
+                <Picker.Item key={member?._id} label={member?.userName} value={member?.userId} />
               ))}
             </Picker>
           </View>

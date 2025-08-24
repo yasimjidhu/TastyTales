@@ -24,11 +24,9 @@ const ExpenseList = ({
 
   // Helper to convert array of userIds to comma-separated names
   const getSplitNames = (userIds = []) => {
-    console.log("userIds in getSplitNames:", userIds);
     return userIds.map((id) => getUserName(id)).join(", ");
   };
 
-  console.log("members in ExpenseList:", members);
   const renderExpense = ({ item: expense }) => (
     <View style={styles.expenseBox}>
       <View style={styles.expenseHeader}>

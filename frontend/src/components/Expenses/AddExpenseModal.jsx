@@ -71,8 +71,6 @@ const AddExpenseModal = ({
     onClose();
   };
 
-  console.log('members are in addexpensemodal',members)
-
   return (
     <Modal
       visible={show}
